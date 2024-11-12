@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../widgets/post_card.dart';
+import '../../widgets/post_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

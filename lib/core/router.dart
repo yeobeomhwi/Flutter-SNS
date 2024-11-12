@@ -1,11 +1,10 @@
 import 'package:app_team2/screens/main_screen.dart';
-
-import '../screens/create_caption_screen.dart';
-import '../screens/create_post_screen.dart';
-import '../screens/login_screen.dart';
+import '../screens/addfeed/create_caption_screen.dart';
+import '../screens/addfeed/create_post_screen.dart';
+import '../screens/login/login_screen.dart';
 import 'package:go_router/go_router.dart';
 
-import '../screens/signup_screen.dart';
+import '../screens/signup/signup_screen.dart';
 
 class CustomRouter {
   static GoRouter router = GoRouter(initialLocation: "/Login", routes: [
