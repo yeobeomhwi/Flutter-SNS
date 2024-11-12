@@ -21,17 +21,26 @@ class FirebaseService {
 
 
 
-  // 회원가입
-  Future<User?> signUpWithEmailPassword(String email, String password) async {
+  Future<String> registerUser(
+      String email, String password, String name, String profileImageUrl) async {
     try {
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+      await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return userCredential.user;
+
+      // Firestore에 사용자 정보 저장
+      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+        'name': name,
+        'email': email,
+        'profileimage': profileImageUrl,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      return '회원가입이 완료되었습니다.';
     } on FirebaseAuthException catch (e) {
-      print("회원가입 중 오류 발생: ${e.message}");
-      throw FirebaseAuthException(code: e.code, message: e.message); // 오류 다시 던지기
+      return e.message ?? '회원가입에 실패했습니다.';
     }
   }
 
