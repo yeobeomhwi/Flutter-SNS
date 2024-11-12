@@ -19,6 +19,8 @@ class FirebaseService {
     }
   }
 
+
+
   // 회원가입
   Future<User?> signUpWithEmailPassword(String email, String password) async {
     try {
