@@ -54,7 +54,7 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                         )
                       : Image.file(
                           File(pickedImages.last.path),
-                          fit: BoxFit.contain,
+                          fit: BoxFit.cover,
                         ),
                 ),
                 const SizedBox(height: 20),
@@ -70,21 +70,42 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                       itemBuilder: (context, index) {
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Colors.grey,
-                                width: 1,
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 100,
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey,
+                                    width: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(
+                                    File(reversedImages[index].path),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                File(reversedImages[index].path),
-                                fit: BoxFit.cover,
+                              Positioned(
+                                top: 5,
+                                right: 5,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    ref
+                                        .read(pickedImagesProvider.notifier)
+                                        .removeImage(reversedImages[index]);
+                                  },
+                                  child: const Icon(
+                                    Icons.cancel_rounded,
+                                    color: Colors.black87,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         );
                       },
