@@ -1,48 +1,35 @@
 import 'dart:io';
+import 'package:app_team2/providers/picked_images_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'package:app_team2/widgets/selected_image_preview.dart';
 import 'package:app_team2/screens/create_caption_screen.dart';
+import 'package:app_team2/widgets/selected_image_preview.dart';
 
-class CreatePostScreen extends StatefulWidget {
-  const CreatePostScreen({super.key});
 
-  @override
-  State<CreatePostScreen> createState() => _CreatePostScreenState();
-}
+class CreatePostScreen extends ConsumerWidget {
+  CreatePostScreen({super.key});
 
-class _CreatePostScreenState extends State<CreatePostScreen> {
   final ImagePicker _picker = ImagePicker();
-  final List<XFile> _pickedImages = [];
 
   // 이미지 선택 함수
-  void getImage(ImageSource source) async {
+  void getImage(ImageSource source, WidgetRef ref) async {
     final XFile? image = await _picker.pickImage(source: source);
-
     if (image != null) {
-      setState(() {
-        _pickedImages.add(image);
-      });
+      ref.read(pickedImagesProvider.notifier).addImage(image);
     }
   }
 
   // 이미지 복수 선택 함수
-  void getMultiImage() async {
+  void getMultiImage(WidgetRef ref) async {
     final List<XFile> images = await _picker.pickMultiImage();
-
-    setState(() {
-      _pickedImages.addAll(images);
-    });
+    ref.read(pickedImagesProvider.notifier).addImages(images);
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pickedImages = ref.watch(pickedImagesProvider);
 
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create a Post'),
@@ -64,13 +51,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           child: Column(
             children: [
               // 최근에 선택된 이미지 표시
-              SelectedImagePreview(pickedImages: _pickedImages),
+              const SelectedImagePreview(),
               const SizedBox(height: 20),
               // 이미지 불러오기 버튼
-              _imageLoadButtons(),
+              _imageLoadButtons(ref),
               const SizedBox(height: 20),
               // 선택된 이미지 gridView
-              _gridPhoto(),
+              _gridPhoto(pickedImages, ref),
             ],
           ),
         ),
@@ -79,7 +66,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   // 이미지 불러오기 버튼
-  Widget _imageLoadButtons() {
+  Widget _imageLoadButtons(WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
@@ -87,21 +74,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         children: [
           SizedBox(
             child: ElevatedButton(
-              onPressed: () => getImage(ImageSource.camera),
+              onPressed: () => getImage(ImageSource.camera, ref),
               child: const Text('Camera'),
             ),
           ),
           const SizedBox(width: 20),
           SizedBox(
             child: ElevatedButton(
-              onPressed: () => getImage(ImageSource.gallery),
+              onPressed: () => getImage(ImageSource.gallery, ref),
               child: const Text('Image'),
             ),
           ),
           const SizedBox(width: 20),
           SizedBox(
             child: ElevatedButton(
-              onPressed: () => getMultiImage(),
+              onPressed: () => getMultiImage(ref),
               child: const Text('Multi Image'),
             ),
           ),
@@ -111,20 +98,22 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   // 선택된 이미지 gridView
-  Widget _gridPhoto() {
+  Widget _gridPhoto(List<XFile> pickedImages, WidgetRef ref) {
     return Expanded(
-      child: _pickedImages.isNotEmpty
+      child: pickedImages.isNotEmpty
           ? GridView(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
               ),
-              children: _pickedImages.map((e) => _gridPhotoItem(e)).toList(),
+              children: pickedImages
+                  .map((e) => _gridPhotoItem(e, ref))
+                  .toList(),
             )
           : const SizedBox(),
     );
   }
 
-  Widget _gridPhotoItem(XFile e) {
+  Widget _gridPhotoItem(XFile e, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: Stack(
@@ -140,9 +129,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             right: 5,
             child: GestureDetector(
               onTap: () {
-                setState(() {
-                  _pickedImages.remove(e);
-                });
+                ref.read(pickedImagesProvider.notifier).removeImage(e);
               },
               child: const Icon(
                 Icons.cancel_rounded,
