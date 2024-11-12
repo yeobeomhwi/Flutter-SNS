@@ -22,3 +22,5 @@ A new Flutter project.
   - Firebase 데이터 관리
 - **shared_preferences: ^2.3.3** [패키지 가이드](https://pub.dev/packages/shared_preferences)
   - 로컬 데이터 저장
+- **social_login_buttons: ^1.0.7** [패키지 가이드](https://pub.dev/packages/social_login_buttons)
+  - SNS 로그인 버튼 패키지
