@@ -72,6 +72,12 @@ class FirebaseService {
     }
   }
 
+  // 현재 로그인한 사용자 UID 가져오기
+  String? getCurrentUserUid() {
+    final User? user = FirebaseAuth.instance.currentUser;
+    return user?.uid;  // 사용자가 로그인한 경우 UID 반환, 아니면 null 반환
+  }
+
   // 현재 로그인된 사용자 정보
   User? getCurrentUser() {
     return FirebaseAuth.instance.currentUser;

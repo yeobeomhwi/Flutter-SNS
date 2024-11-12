@@ -10,6 +10,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // FirebaseService에서 현재 로그인한 사용자 정보 가져오기
     final User? currentUser = FirebaseService().getCurrentUser();
+    final String? currentUserUid = FirebaseService().getCurrentUserUid(); // UID 가져오기
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
@@ -32,6 +33,12 @@ class ProfileScreen extends StatelessWidget {
             ),
             Text(
               '이메일: ${currentUser.email ?? '이메일 없음'}',
+              style: const TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 16),
+            // UID 추가
+            Text(
+              'UID: ${currentUserUid ?? 'UID 없음'}',
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 16),
