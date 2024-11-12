@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:social_login_buttons/social_login_buttons.dart';
 
 class LoginScreen extends ConsumerWidget {
@@ -44,12 +45,26 @@ class LoginScreen extends ConsumerWidget {
               onPressed: () {
                 print('Email: $email');
                 print('Password: $password');
+                GoRouter.of(context).push('/Main');
               },
             ),
             const SizedBox(height: 20),
             SocialLoginButton(
               onPressed: () {},
               buttonType: SocialLoginButtonType.google,
+            ),
+            SizedBox(height: 20),
+            Divider(),
+            SocialLoginButton(
+              backgroundColor: Colors.white,
+              height: 50,
+              text: 'Sign Up with Email',
+              textColor: Colors.black,
+              fontSize: 20,
+              buttonType: SocialLoginButtonType.generalLogin,
+              onPressed: () {
+                GoRouter.of(context).push('/Signup');
+              },
             ),
           ],
         ),

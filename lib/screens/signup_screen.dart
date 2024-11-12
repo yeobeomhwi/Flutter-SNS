@@ -13,7 +13,6 @@ class _SignupScreenState extends State<SignupScreen> {
   TextEditingController _nameController = TextEditingController();
   int _currentStep = 0;
   bool _obscurePassword = true; // 비밀번호 가리기 여부
-  String _profileImageUrl = ''; // 로컬 이미지 예시
 
   @override
   Widget build(BuildContext context) {
@@ -64,36 +63,14 @@ class _SignupScreenState extends State<SignupScreen> {
         isEditing: _currentStep == 1,
       ),
       _buildStep(
-        title: 'Profile Picture',
-        content: GestureDetector(
-          onTap: _pickProfileImage,
-          child: CircleAvatar(
-            backgroundImage: _profileImageUrl.isEmpty
-                ? null
-                : AssetImage(_profileImageUrl),
-            radius: 100,
-            backgroundColor: Colors.grey[300],
-            child: _profileImageUrl.isEmpty
-                ? const Icon(
-              Icons.add_a_photo,
-              size: 50,
-              color: Colors.white,
-            )
-                : null,
-          ),
-        ),
-        isActive: _currentStep >= 2,
-        isEditing: _currentStep == 2,
-      ),
-      _buildStep(
         title: 'User Name',
         content: TextField(
           controller: _nameController,
           decoration: const InputDecoration(labelText: 'Name'),
           keyboardType: TextInputType.text,
         ),
-        isActive: _currentStep >= 3,
-        isEditing: _currentStep == 3,
+        isActive: _currentStep >= 2,
+        isEditing: _currentStep == 2,
       ),
     ];
   }
@@ -128,7 +105,7 @@ class _SignupScreenState extends State<SignupScreen> {
             child: const Text('뒤로가기'),
           )
               : Container(),
-          _currentStep != 3
+          _currentStep != 2
               ? ElevatedButton(
             onPressed: _.onStepContinue,
             child: const Text('다음으로'),
@@ -155,7 +132,7 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   void _onStepContinue() {
-    if (_currentStep >= 3) return;
+    if (_currentStep >= 2) return;
     setState(() {
       _currentStep += 1;
     });
@@ -165,14 +142,6 @@ class _SignupScreenState extends State<SignupScreen> {
   void _togglePasswordVisibility() {
     setState(() {
       _obscurePassword = !_obscurePassword;
-    });
-  }
-
-  // 프로필 사진 선택 함수 (현재는 이미지 경로를 수정하는 형태로 구현)
-  void _pickProfileImage() {
-    setState(() {
-      // 임시로 이미지 경로를 변경하는 방식으로 구현
-      _profileImageUrl = ''; // 다른 프로필 사진 경로로 변경
     });
   }
 

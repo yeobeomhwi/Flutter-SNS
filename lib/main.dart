@@ -6,6 +6,7 @@ import 'package:app_team2/widgets/post_card.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/router.dart';
 import 'firebase_options.dart';
 
 void main() async{
@@ -23,12 +24,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(  // Wrap your app with ProviderScope
-      child: MaterialApp(
+      child: MaterialApp.router(
+        routerConfig: CustomRouter.router,
         title: 'Flutter Demo',
         theme: ThemeData(
           primarySwatch: Colors.blue,
-        ),
-        home: LoginScreen(),  // Your LoginScreen widget
+        ), // Your LoginScreen widget
       ),
     );
   }
