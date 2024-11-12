@@ -1,8 +1,9 @@
 import 'dart:io';
-
-import 'package:app_team2/widgets/selected_image_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'package:app_team2/widgets/selected_image_preview.dart';
+import 'package:app_team2/screens/create_caption_screen.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -38,7 +39,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   void initState() {
     super.initState();
-    getImage(ImageSource.gallery);
   }
 
   @override
@@ -48,7 +48,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         title: const Text('Create a Post'),
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (BuildContext context) {
+                return const CreateCaptionScreen();
+              }));
+            },
             child: const Text('다음'),
           ),
         ],
@@ -113,9 +118,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
               ),
-              children: _pickedImages
-                  .map((e) => _gridPhotoItem(e))
-                  .toList(),
+              children: _pickedImages.map((e) => _gridPhotoItem(e)).toList(),
             )
           : const SizedBox(),
     );
