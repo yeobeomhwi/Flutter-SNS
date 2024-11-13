@@ -3,7 +3,6 @@ import 'package:app_team2/model/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:app_team2/providers/picked_images_provider.dart';
 import '../../widgets/post_card.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -13,7 +12,6 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pickedImages = ref.watch(pickedImagesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -40,8 +38,8 @@ class HomeScreen extends ConsumerWidget {
           itemBuilder: (BuildContext context, int index) {
             const user = User(
               id: '1',
-              username: '닉네임',
-              avatarUrl: 'https://picsum.photos/250/250?3',
+              name: '닉네임',
+              profileImage: 'https://picsum.photos/250/250?3',
             );
             final post = Post(
               id: '1',

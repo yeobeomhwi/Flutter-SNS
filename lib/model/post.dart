@@ -67,8 +67,8 @@ class Post {
     
     final currentUser = User(
       id: userId,
-      username: userDoc['name'],
-      avatarUrl: 'https://picsum.photos/250/250?3',
+      name: userDoc['name'],
+      profileImage: 'https://picsum.photos/250/250?3', 
     );
 
 

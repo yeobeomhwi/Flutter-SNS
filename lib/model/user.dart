@@ -1,11 +1,11 @@
 class User {
   final String id;
-  final String username;
-  final String avatarUrl;
+  final String name;
+  final String profileImage;
 
   const User({
     required this.id,
-    required this.username,
-    required this.avatarUrl,
+    required this.name,
+    required this.profileImage,
   });
 }

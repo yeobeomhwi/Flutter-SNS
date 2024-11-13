@@ -50,10 +50,10 @@ class _PostCardState extends State<PostCard> {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: NetworkImage(widget.post.user.avatarUrl),
+                backgroundImage: NetworkImage(widget.post.user.profileImage),
               ),
               const SizedBox(width: 8),
-              Text(widget.post.user.username),
+              Text(widget.post.user.name),
               const Spacer(),
               IconButton(
                 onPressed: () {},
@@ -121,7 +121,7 @@ class _PostCardState extends State<PostCard> {
               ),
               const SizedBox(height: 4.0),
               Text(
-                '${widget.post.user.username}: ${widget.post.caption}',
+                '${widget.post.user.name}: ${widget.post.caption}',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
