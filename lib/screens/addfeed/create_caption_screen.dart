@@ -140,17 +140,25 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                         _captionController,
                         firebaseService,
                       );
-                      // 성공적으로 포스트가 생성되었을 때의 처리
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                            content: Text('포스트가 성공적으로 작성되었습니다.')),
+                          content: Text('포스트가 성공적으로 작성되었습니다.'),
+                          duration: Duration(seconds: 2),
+                        ),
                       );
+
+                      // 초기화 및 화면 이동
+                      await Future.delayed(
+                          const Duration(milliseconds: 500)); // 0.5초 딜레이
+                      // 이미지 및 텍스트 초기화
+                      ref.read(pickedImagesProvider.notifier).clearImages();
+                      _captionController.clear();
+                      // 메인 화면으로 이동
+                      context.go('/Main');
                     } catch (e) {
-                      // 에러 처리
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('오류가 발생했습니다.: $e')),
                       );
-                      print(e);
                     }
                   },
                   style: ElevatedButton.styleFrom(
