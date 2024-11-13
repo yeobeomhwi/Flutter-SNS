@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import 'package:app_team2/model/post.dart';
+import 'package:app_team2/data/models/post.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;

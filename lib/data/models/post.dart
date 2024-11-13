@@ -1,4 +1,6 @@
-import 'package:app_team2/model/user.dart';
+
+
+import 'package:app_team2/data/models/user.dart';
 
 class Post {
   final String id;

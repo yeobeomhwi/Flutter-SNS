@@ -1,8 +1,8 @@
-import 'package:app_team2/model/post.dart';
-import 'package:app_team2/model/user.dart';
+import 'package:app_team2/data/models/post.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/models/user.dart';
 import '../../widgets/post_card.dart';
 
 class HomeScreen extends ConsumerWidget {
