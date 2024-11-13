@@ -1,11 +1,14 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
   static final FirebaseAuth _auth = FirebaseAuth.instance;
-
   // 로그인
   Future<User?> signInWithEmailPassword(String email, String password) async {
     try {
@@ -165,6 +168,24 @@ class FirebaseService {
       print("프로필 이미지 URL 저장 오류: $e");
     }
   }
+
+  // 선택한 이미지를 Firebase Storage에 업로드하고 Firestore에 URL 저장
+  Future<void> uploadProfileImage(String userId, File imageFile) async {
+    try {
+      // Firebase Storage에 이미지 업로드
+      final storageRef = _storage.ref().child('profile_images/$userId.jpg');
+      await storageRef.putFile(imageFile);
+
+      // 업로드된 이미지의 다운로드 URL 가져오기
+      final imageUrl = await storageRef.getDownloadURL();
+
+      // Firestore에 다운로드 URL 저장
+      await updateProfileImageUrl(userId, imageUrl);
+    } catch (e) {
+      print("프로필 이미지 업로드 오류: $e");
+    }
+  }
+
 
 
   // FCM 토큰 가져오기 (Firebase Cloud Messaging)
