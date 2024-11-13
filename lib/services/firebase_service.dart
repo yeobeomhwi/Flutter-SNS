@@ -9,7 +9,7 @@ class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   static final FirebaseAuth _auth = FirebaseAuth.instance;
-  // 로그인
+  // 이메일 로그인
   Future<User?> signInWithEmailPassword(String email, String password) async {
     try {
       final UserCredential userCredential =
@@ -25,7 +25,6 @@ class FirebaseService {
     }
   }
 
-  //구글 로그인
   // 구글 로그인
   Future<String> signInWithGoogle() async {
     try {
@@ -34,8 +33,8 @@ class FirebaseService {
 
       // 인증 정보를 가져옴
 
-      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
-
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
 
       // Firebase 인증 자격 증명 생성
       final credential = GoogleAuthProvider.credential(
@@ -44,13 +43,15 @@ class FirebaseService {
       );
 
       // Firebase로 로그인
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
 
       User? user = userCredential.user;
 
       // Firestore에서 사용자 문서 확인 및 새 사용자일 경우 추가
       if (user != null) {
-        DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
 
         if (!userDoc.exists) {
           // Firestore에 새 사용자 정보 저장
@@ -68,7 +69,6 @@ class FirebaseService {
       return e.message ?? '로그인에 실패했습니다.';
     }
   }
-
 
   //회원가입
   Future<String> registerUser(String email, String password, String name,
@@ -204,13 +204,16 @@ class FirebaseService {
     }
   }
 
-  // 포스트 저장하기
+  // Firestore의 posts 컬렉션에 새로운 포스트 추가
   Future<void> createPost(
       String userId, String caption, List<String> imageUrls) async {
     try {
-      // Firestore의 posts 컬렉션에 새로운 포스트 추가
+      // 현재 시간을 밀리세컨드로 가져오기
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final postId = '$userId$timestamp';
+
       await _firestore.collection('posts').add({
-        'userId': userId,
+        'postId': postId,
         'caption': caption,
         'imageUrls': imageUrls,
         'createdAt': FieldValue.serverTimestamp(),

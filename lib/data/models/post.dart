@@ -1,9 +1,7 @@
-
-
 import 'package:app_team2/data/models/user.dart';
 
 class Post {
-  final String id;
+  final String postId;
   final User user;
   final List<String> imageUrls;
   final String caption;
@@ -14,7 +12,7 @@ class Post {
   final int commentsCount;
 
   const Post({
-    required this.id,
+    required this.postId,
     required this.user,
     required this.imageUrls,
     required this.caption,
@@ -26,7 +24,7 @@ class Post {
   });
 
   Post copyWith({
-    String? id,
+    String? postId,
     User? user,
     List<String>? imageUrls,
     String? caption,
@@ -37,7 +35,7 @@ class Post {
     int? commentsCount,
   }) {
     return Post(
-      id: id ?? this.id,
+      postId: postId ?? this.postId,
       user: user ?? this.user,
       imageUrls: imageUrls ?? this.imageUrls,
       caption: caption ?? this.caption,

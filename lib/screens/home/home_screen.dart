@@ -42,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
               profileImage: 'https://picsum.photos/250/250?3',
             );
             final post = Post(
-              id: '1',
+              postId: '1',
               user: user,
               imageUrls: [
                 'https://picsum.photos/250/250?1',
