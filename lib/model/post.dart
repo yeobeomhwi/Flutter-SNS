@@ -1,9 +1,4 @@
 import 'package:app_team2/model/user.dart';
-import 'package:app_team2/providers/picked_images_provider.dart';
-import 'package:app_team2/services/firebase_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Post {
   final String id;
@@ -50,52 +45,5 @@ class Post {
       comments: comments ?? this.comments,
       commentsCount: commentsCount ?? this.commentsCount,
     );
-  }
-
-  static Future<void> createPost(
-      WidgetRef ref, 
-      TextEditingController captionController, 
-      FirebaseService firebaseService) async {
-    final pickedImages = ref.read(pickedImagesProvider);
-    final List<String> imagePaths = pickedImages.map((xFile) => xFile.path).toList();
-    
-    final userId = firebaseService.getCurrentUserUid();
-    if (userId == null) throw Exception('로그인이 필요합니다');
-    
-    final userData = await firebaseService.getUserData(userId);
-    final userDoc = userData.data() as Map<String, dynamic>;
-    
-    final currentUser = User(
-      id: userId,
-      name: userDoc['name'],
-      profileImage: 'https://picsum.photos/250/250?3', 
-    );
-
-
-    final postRef = FirebaseFirestore.instance.collection('posts').doc();
-
-    final newPost = Post(
-      id: postRef.id, // 자동 생성된 ID 사용
-      user: currentUser,
-      imageUrls: imagePaths,
-      caption: captionController.text,
-      createdAt: DateTime.now(),
-      isLiked: false,
-      likesCount: 0,
-      comments: null,
-      commentsCount: 0,
-    );
-
-    await FirebaseFirestore.instance.collection('posts').add({
-      'id': newPost.id,
-      'userId': newPost.user.id,
-      'imageUrls': newPost.imageUrls,
-      'caption': newPost.caption,
-      'createdAt': newPost.createdAt.toIso8601String(),
-      'isLiked': newPost.isLiked,
-      'likesCount': newPost.likesCount,
-      'comments': newPost.comments,
-      'commentsCount': newPost.commentsCount,
-    });
   }
 }

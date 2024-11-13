@@ -9,14 +9,16 @@ class FirebaseService {
   // 로그인
   Future<User?> signInWithEmailPassword(String email, String password) async {
     try {
-      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      final UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
       return userCredential.user;
     } on FirebaseAuthException catch (e) {
       print("로그인 중 오류 발생: ${e.message}");
-      throw FirebaseAuthException(code: e.code, message: e.message); // 오류 다시 던지기
+      throw FirebaseAuthException(
+          code: e.code, message: e.message); // 오류 다시 던지기
     }
   }
 
@@ -28,7 +30,8 @@ class FirebaseService {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
       // 인증 정보를 가져옴
-      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
 
       // Firebase 인증 자격 증명 생성
       final credential = GoogleAuthProvider.credential(
@@ -37,12 +40,14 @@ class FirebaseService {
       );
 
       // Firebase로 로그인
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
       User? user = userCredential.user;
 
       // Firestore에서 사용자 문서 확인 및 새 사용자일 경우 추가
       if (user != null) {
-        DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
 
         if (!userDoc.exists) {
           // Firestore에 새 사용자 정보 저장
@@ -61,13 +66,12 @@ class FirebaseService {
     }
   }
 
-
   //회원가입
-  Future<String> registerUser(
-      String email, String password, String name, String profileImageUrl) async {
+  Future<String> registerUser(String email, String password, String name,
+      String profileImageUrl) async {
     try {
       UserCredential userCredential =
-      await _auth.createUserWithEmailAndPassword(
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -106,7 +110,7 @@ class FirebaseService {
   // 현재 로그인한 사용자 UID 가져오기
   String? getCurrentUserUid() {
     final User? user = FirebaseAuth.instance.currentUser;
-    return user?.uid;  // 사용자가 로그인한 경우 UID 반환, 아니면 null 반환
+    return user?.uid; // 사용자가 로그인한 경우 UID 반환, 아니면 null 반환
   }
 
   // 현재 로그인된 사용자 정보
@@ -143,15 +147,16 @@ class FirebaseService {
   // 프로필 이미지 URL 가져오기
   Future<String?> getProfileImageUrl(String userId) async {
     try {
-      DocumentSnapshot snapshot = await _firestore.collection('users').doc(userId).get();
+      DocumentSnapshot snapshot =
+          await _firestore.collection('users').doc(userId).get();
       if (snapshot.exists) {
         var data = snapshot.data() as Map<String, dynamic>;
-        return data['profileimage'];  // Firestore에서 저장된 프로필 이미지 URL 가져오기
+        return data['profileimage']; // Firestore에서 저장된 프로필 이미지 URL 가져오기
       }
-      return null;  // 이미지 URL이 없으면 null 반환
+      return null; // 이미지 URL이 없으면 null 반환
     } catch (e) {
       print("프로필 이미지 가져오기 오류: $e");
-      return null;  // 오류 발생 시 null 반환
+      return null; // 오류 발생 시 null 반환
     }
   }
 
@@ -159,13 +164,12 @@ class FirebaseService {
   Future<void> updateProfileImageUrl(String userId, String imageUrl) async {
     try {
       await _firestore.collection('users').doc(userId).update({
-        'profileimage': imageUrl,  // Firestore에 프로필 이미지 URL 저장
+        'profileimage': imageUrl, // Firestore에 프로필 이미지 URL 저장
       });
     } catch (e) {
       print("프로필 이미지 URL 저장 오류: $e");
     }
   }
-
 
   // FCM 토큰 가져오기 (Firebase Cloud Messaging)
   Future<String?> getFCMToken() async {
@@ -176,6 +180,27 @@ class FirebaseService {
     } catch (e) {
       print("FCM 토큰 가져오기 중 오류 발생: $e");
       rethrow;
+    }
+  }
+
+  // 포스트 저장하기
+  Future<void> createPost(
+      String userId, String caption, List<String> imageUrls) async {
+    try {
+      // Firestore의 posts 컬렉션에 새로운 포스트 추가
+      await _firestore.collection('posts').add({
+        'userId': userId,
+        'caption': caption,
+        'imageUrls': imageUrls,
+        'createdAt': FieldValue.serverTimestamp(),
+        'isLiked': false,
+        'likesCount': 0,
+        'commentsCount': 0,
+        'comments': {}, // 초기화된 댓글
+      });
+    } catch (e) {
+      print("포스트 생성 중 오류 발생: $e");
+      rethrow; // 오류 다시 던지기
     }
   }
 }

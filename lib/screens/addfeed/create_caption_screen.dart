@@ -131,30 +131,40 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                 const SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: () async {
-                    // FirebaseService 인스턴스 생성
                     final FirebaseService firebaseService = FirebaseService();
-                    // Post 생성 및 저장
+
+                    final pickedImages = ref.read(pickedImagesProvider);
+                    final List<String> imagePaths =
+                        pickedImages.map((xFile) => xFile.path).toList();
+                    final userId = firebaseService.getCurrentUserUid();
+
                     try {
-                      await Post.createPost(
-                        ref, // WidgetRef 인스턴스
-                        _captionController,
-                        firebaseService,
+                      // 포스트 생성
+                      await firebaseService.createPost(
+                        userId!,
+                        _captionController.text,
+                        imagePaths,
                       );
+
+                      // 성공 메시지 표시
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('포스트가 성공적으로 작성되었습니다.'),
-                          duration: Duration(seconds: 2),
+                          duration: Duration(seconds: 1),
                         ),
                       );
 
                       // 초기화 및 화면 이동
                       await Future.delayed(
                           const Duration(milliseconds: 500)); // 0.5초 딜레이
-                      // 이미지 및 텍스트 초기화
-                      ref.read(pickedImagesProvider.notifier).clearImages();
-                      _captionController.clear();
+                      ref
+                          .read(pickedImagesProvider.notifier)
+                          .clearImages(); // 이미지 초기화
+                      _captionController.clear(); // 텍스트 필드 비우기
+
                       // 메인 화면으로 이동
                       context.go('/Main');
+                      
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('오류가 발생했습니다.: $e')),
