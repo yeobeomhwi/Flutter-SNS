@@ -1,8 +1,12 @@
 import 'dart:io';
 
+import 'package:app_team2/model/post.dart';
+import 'package:app_team2/model/user.dart';
 import 'package:app_team2/providers/picked_images_provider.dart';
+import 'package:app_team2/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class CreateCaptionScreen extends ConsumerStatefulWidget {
   const CreateCaptionScreen({super.key});
@@ -26,8 +30,8 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   @override
   Widget build(BuildContext context) {
     final pickedImages = ref.watch(pickedImagesProvider);
-
     final reversedImages = pickedImages.reversed.toList();
+    // final caption = _captionController.text;
 
     return GestureDetector(
       onTap: () {
@@ -126,7 +130,29 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    // FirebaseService 인스턴스 생성
+                    final FirebaseService firebaseService = FirebaseService();
+                    // Post 생성 및 저장
+                    try {
+                      await Post.createPost(
+                        ref, // WidgetRef 인스턴스
+                        _captionController,
+                        firebaseService,
+                      );
+                      // 성공적으로 포스트가 생성되었을 때의 처리
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('포스트가 성공적으로 작성되었습니다.')),
+                      );
+                    } catch (e) {
+                      // 에러 처리
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('오류가 발생했습니다.: $e')),
+                      );
+                      print(e);
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo,
                     foregroundColor: Colors.white,
