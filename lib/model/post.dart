@@ -4,7 +4,6 @@ import 'package:app_team2/services/firebase_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 class Post {
   final String id;
@@ -12,9 +11,10 @@ class Post {
   final List<String> imageUrls;
   final String caption;
   final DateTime createdAt;
-  final int likesCount;
-  final int commentsCount;
   final bool isLiked;
+  final int likesCount;
+  final Map<String, String>? comments; 
+  final int commentsCount;
 
   const Post({
     required this.id,
@@ -22,9 +22,10 @@ class Post {
     required this.imageUrls,
     required this.caption,
     required this.createdAt,
-    this.likesCount = 0,
-    this.commentsCount = 0,
     this.isLiked = false,
+    this.likesCount = 0,
+    this.comments, 
+    this.commentsCount = 0,
   });
 
   Post copyWith({
@@ -33,9 +34,10 @@ class Post {
     List<String>? imageUrls,
     String? caption,
     DateTime? createdAt,
-    int? likesCount,
-    int? commentsCount,
     bool? isLiked,
+    int? likesCount,
+    Map<String, String>? comments,
+    int? commentsCount,
   }) {
     return Post(
       id: id ?? this.id,
@@ -43,9 +45,10 @@ class Post {
       imageUrls: imageUrls ?? this.imageUrls,
       caption: caption ?? this.caption,
       createdAt: createdAt ?? this.createdAt,
-      likesCount: likesCount ?? this.likesCount,
-      commentsCount: commentsCount ?? this.commentsCount,
       isLiked: isLiked ?? this.isLiked,
+      likesCount: likesCount ?? this.likesCount,
+      comments: comments ?? this.comments,
+      commentsCount: commentsCount ?? this.commentsCount,
     );
   }
 
@@ -68,15 +71,19 @@ class Post {
       avatarUrl: 'https://picsum.photos/250/250?3',
     );
 
+
+    final postRef = FirebaseFirestore.instance.collection('posts').doc();
+
     final newPost = Post(
-      id: const Uuid().v4(),
+      id: postRef.id, // 자동 생성된 ID 사용
       user: currentUser,
       imageUrls: imagePaths,
       caption: captionController.text,
       createdAt: DateTime.now(),
-      likesCount: 0,
-      commentsCount: 0,
       isLiked: false,
+      likesCount: 0,
+      comments: null,
+      commentsCount: 0,
     );
 
     await FirebaseFirestore.instance.collection('posts').add({
@@ -85,9 +92,10 @@ class Post {
       'imageUrls': newPost.imageUrls,
       'caption': newPost.caption,
       'createdAt': newPost.createdAt.toIso8601String(),
-      'likesCount': newPost.likesCount,
-      'commentsCount': newPost.commentsCount,
       'isLiked': newPost.isLiked,
+      'likesCount': newPost.likesCount,
+      'comments': newPost.comments,
+      'commentsCount': newPost.commentsCount,
     });
   }
 }
