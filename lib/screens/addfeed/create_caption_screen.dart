@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:app_team2/model/post.dart';
-import 'package:app_team2/model/user.dart';
 import 'package:app_team2/providers/picked_images_provider.dart';
 import 'package:app_team2/services/firebase_service.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +17,7 @@ class CreateCaptionScreen extends ConsumerStatefulWidget {
 class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   final TextEditingController _captionController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final FirebaseService firebaseService = FirebaseService();
 
   @override
   void dispose() {
@@ -30,8 +29,10 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   @override
   Widget build(BuildContext context) {
     final pickedImages = ref.watch(pickedImagesProvider);
+    final List<String> imagePaths =
+        pickedImages.map((xFile) => xFile.path).toList();
     final reversedImages = pickedImages.reversed.toList();
-    // final caption = _captionController.text;
+    final userId = firebaseService.getCurrentUserUid();
 
     return GestureDetector(
       onTap: () {
@@ -131,13 +132,6 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                 const SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: () async {
-                    final FirebaseService firebaseService = FirebaseService();
-
-                    final pickedImages = ref.read(pickedImagesProvider);
-                    final List<String> imagePaths =
-                        pickedImages.map((xFile) => xFile.path).toList();
-                    final userId = firebaseService.getCurrentUserUid();
-
                     try {
                       // 포스트 생성
                       await firebaseService.createPost(
@@ -145,7 +139,7 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                         _captionController.text,
                         imagePaths,
                       );
-
+                      
                       // 성공 메시지 표시
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -164,7 +158,6 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
 
                       // 메인 화면으로 이동
                       context.go('/Main');
-                      
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('오류가 발생했습니다.: $e')),
