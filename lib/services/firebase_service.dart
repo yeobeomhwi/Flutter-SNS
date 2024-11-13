@@ -21,22 +21,46 @@ class FirebaseService {
   }
 
   //구글 로그인
-  Future<UserCredential> signInWithGoogle() async {
-    // Trigger the authentication flow
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  // 구글 로그인
+  Future<String> signInWithGoogle() async {
+    try {
+      // 구글 인증 흐름 시작
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+      // 인증 정보를 가져옴
+      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
 
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
+      // Firebase 인증 자격 증명 생성
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
 
-    // Once signed in, return the UserCredential
-    return await FirebaseAuth.instance.signInWithCredential(credential);
+      // Firebase로 로그인
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      User? user = userCredential.user;
+
+      // Firestore에서 사용자 문서 확인 및 새 사용자일 경우 추가
+      if (user != null) {
+        DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+
+        if (!userDoc.exists) {
+          // Firestore에 새 사용자 정보 저장
+          await _firestore.collection('users').doc(user.uid).set({
+            'name': user.displayName,
+            'email': user.email,
+            'profileImage': user.photoURL,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      return '로그인 성공';
+    } on FirebaseAuthException catch (e) {
+      return e.message ?? '로그인에 실패했습니다.';
+    }
   }
+
 
   //회원가입
   Future<String> registerUser(
@@ -47,6 +71,13 @@ class FirebaseService {
         email: email,
         password: password,
       );
+      User? user = _auth.currentUser;
+
+      await user?.updateDisplayName(name);
+      await user?.updatePhotoURL(profileImageUrl);
+
+      await user?.reload();
+      user = _auth.currentUser;
 
       // Firestore에 사용자 정보 저장
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
