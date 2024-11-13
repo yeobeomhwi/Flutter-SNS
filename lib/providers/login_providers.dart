@@ -10,6 +10,7 @@ final loginProvider = StateNotifierProvider<LoginNotifier, LoginState>((ref) {
   return LoginNotifier(firebaseService);
 });
 
+
 class LoginState {
   final bool isLoading;
   final String errorMessage;

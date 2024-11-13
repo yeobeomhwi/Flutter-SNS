@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart'; // 추가 라이브러리
 
 class PostCard extends StatefulWidget {
   const PostCard({super.key});
@@ -8,6 +9,16 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
+  // 이미지 목록
+  final List<String> imageUrls = [
+    'https://picsum.photos/250/250?1',
+    'https://picsum.photos/250/250?2',
+    'https://picsum.photos/250/250?3',
+  ];
+
+  // PageController 선언
+  final PageController _controller = PageController();
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -30,13 +41,37 @@ class _PostCardState extends State<PostCard> {
             ],
           ),
         ),
+        // PageView로 여러 이미지를 좌우로 넘기기
         GestureDetector(
           onTap: () {},
-          child: Image.network(
-            'https://picsum.photos/250/250',
-            width: double.infinity,
+          child: Container(
             height: 300,
-            fit: BoxFit.cover,
+            child: PageView.builder(
+              controller: _controller,  // controller 연결
+              itemCount: imageUrls.length,
+              itemBuilder: (context, index) {
+                return Image.network(
+                  imageUrls[index],
+                  width: double.infinity,
+                  height: 300,
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Center(
+            child: SmoothPageIndicator(
+              controller: _controller,  // controller 연결
+              count: imageUrls.length,
+              effect: WormEffect(
+                dotWidth: 8.0,
+                dotHeight: 8.0,
+                spacing: 16.0,
+              ),
+            ),
           ),
         ),
         Padding(

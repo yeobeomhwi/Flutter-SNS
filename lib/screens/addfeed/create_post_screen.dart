@@ -3,8 +3,10 @@ import 'package:app_team2/providers/picked_images_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:app_team2/screens/create_caption_screen.dart';
+
 import 'package:app_team2/widgets/selected_image_preview.dart';
+
+import 'create_caption_screen.dart';
 
 
 class CreatePostScreen extends ConsumerWidget {
