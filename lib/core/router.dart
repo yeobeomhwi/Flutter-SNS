@@ -12,6 +12,6 @@ class CustomRouter {
     GoRoute(path: "/Signup", builder: (context, state) => const SignupScreen()),
     GoRoute(path: "/Main", builder: (context, state) => const MainScreen()),
     GoRoute(path: "/CreatePost", builder: (context, state) =>  CreatePostScreen()),
-    GoRoute(path: "/CreateCaption", builder: (context, state) => CreateCaptionScreen())
+    GoRoute(path: "/CreateCaption", builder: (context, state) => const CreateCaptionScreen())
   ]);
 }

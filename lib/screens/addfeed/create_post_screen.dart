@@ -1,13 +1,11 @@
 import 'dart:io';
-import 'package:app_team2/providers/picked_images_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'package:app_team2/providers/picked_images_provider.dart';
 import 'package:app_team2/widgets/selected_image_preview.dart';
-
-import 'create_caption_screen.dart';
-
 
 class CreatePostScreen extends ConsumerWidget {
   CreatePostScreen({super.key});
@@ -38,10 +36,7 @@ class CreatePostScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (BuildContext context) {
-                return const CreateCaptionScreen();
-              }));
+              context.push('/CreateCaption');
             },
             child: const Text('다음'),
           ),
@@ -107,9 +102,8 @@ class CreatePostScreen extends ConsumerWidget {
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
               ),
-              children: pickedImages
-                  .map((e) => _gridPhotoItem(e, ref))
-                  .toList(),
+              children:
+                  pickedImages.map((e) => _gridPhotoItem(e, ref)).toList(),
             )
           : const SizedBox(),
     );

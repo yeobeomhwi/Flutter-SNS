@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:app_team2/providers/picked_images_provider.dart';
+import 'package:app_team2/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class CreateCaptionScreen extends ConsumerStatefulWidget {
   const CreateCaptionScreen({super.key});
@@ -15,6 +17,7 @@ class CreateCaptionScreen extends ConsumerStatefulWidget {
 class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   final TextEditingController _captionController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final FirebaseService firebaseService = FirebaseService();
 
   @override
   void dispose() {
@@ -26,8 +29,10 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   @override
   Widget build(BuildContext context) {
     final pickedImages = ref.watch(pickedImagesProvider);
-
+    final List<String> imagePaths =
+        pickedImages.map((xFile) => xFile.path).toList();
     final reversedImages = pickedImages.reversed.toList();
+    final userId = firebaseService.getCurrentUserUid();
 
     return GestureDetector(
       onTap: () {
@@ -126,7 +131,39 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    try {
+                      // 포스트 생성
+                      await firebaseService.createPost(
+                        userId!,
+                        _captionController.text,
+                        imagePaths,
+                      );
+                      
+                      // 성공 메시지 표시
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('포스트가 성공적으로 작성되었습니다.'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+
+                      // 초기화 및 화면 이동
+                      await Future.delayed(
+                          const Duration(milliseconds: 500)); // 0.5초 딜레이
+                      ref
+                          .read(pickedImagesProvider.notifier)
+                          .clearImages(); // 이미지 초기화
+                      _captionController.clear(); // 텍스트 필드 비우기
+
+                      // 메인 화면으로 이동
+                      context.go('/Main');
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('오류가 발생했습니다.: $e')),
+                      );
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo,
                     foregroundColor: Colors.white,
