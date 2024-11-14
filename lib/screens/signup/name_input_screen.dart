@@ -5,8 +5,10 @@ import 'package:app_team2/utils/extensions/email_vaildator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:social_login_buttons/social_login_buttons.dart';
 import '../../widgets/login/custom_textfiled.dart';
+import '../../widgets/showloading.dart';
 
 class NameInputScreen extends ConsumerStatefulWidget {
   const NameInputScreen({super.key});
@@ -26,6 +28,7 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
     nameFocusNode.dispose();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +76,7 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
 
               SizedBox(height: 15.h),
 
-              //텍스트 필드
+              // 텍스트 필드
               CustomTextFiled(
                 controller: nameController,
                 icon: Icons.account_circle,
@@ -94,7 +97,7 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
 
               SizedBox(height: 20.h),
 
-              //회원가입 버튼
+              // 회원가입 버튼
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: SocialLoginButton(
@@ -105,23 +108,45 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
                   fontSize: 16.sp,
                   buttonType: SocialLoginButtonType.generalLogin,
                   onPressed: () async {
+                    // 폼 유효성 검사
                     if (_formKey.currentState!.validate()) {
-                      final user = UserModel(
-                        uid: formData.state!.uid,
-                        displayName: nameController.text.trim(),
-                        email: formData.state!.email,
-                        followers: [],
-                        following: [],
-                        photoURL: formData.state!.photoURL,
-                      );
-                      formData.update((state) => user);
+                      try {
+                        // 로딩 다이얼로그 표시
+                        ShowLoadingDialog.show(context);
 
-                      await FirebaseService().registerUser(
-                        formData.state!.email,
-                        password.state!,
-                        formData.state!.displayName,
-                        formData.state!.photoURL,
-                      );
+                        // Firebase 사용자 등록
+                        final user = UserModel(
+                          uid: formData.state!.uid,
+                          displayName: nameController.text.trim(),
+                          email: formData.state!.email,
+                          followers: [],
+                          following: [],
+                          photoURL: formData.state!.photoURL,
+                        );
+
+                        // formData 상태 업데이트
+                        formData.update((state) => user);
+
+                        // Firebase 서비스로 사용자 등록
+                        await FirebaseService().registerUser(
+                          formData.state!.email,
+                          password.state!,
+                          formData.state!.displayName,
+                          formData.state!.photoURL,
+                        );
+                        await FirebaseService().signOut();
+
+                        // 로그인 화면으로 이동
+                        GoRouter.of(context).go('/Login');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('회원가입이 완료되었습니다..')),
+                        );
+                      } catch (error) {
+                        print(error);
+                      } finally {
+                        // 로딩 다이얼로그 종료
+                        ShowLoadingDialog.hide(context);
+                      }
                     }
                   },
                 ),
