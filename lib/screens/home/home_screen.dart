@@ -1,11 +1,15 @@
 import 'package:app_team2/data/models/post.dart';
+import 'package:app_team2/services/firebase_service.dart';
 import 'package:app_team2/widgets/post_card.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+  HomeScreen({super.key});
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -66,7 +70,9 @@ class HomeScreen extends ConsumerWidget {
             child: ListView.builder(
               itemCount: posts.length,
               itemBuilder: (BuildContext context, int index) {
-                return PostCard(post: posts[index]);
+                return PostCard(
+                  post: posts[index],
+                );
               },
             ),
           );

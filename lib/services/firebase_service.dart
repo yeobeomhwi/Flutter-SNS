@@ -218,7 +218,7 @@ class FirebaseService {
     }
   }
 
-  // Firestore에 프로필 이미지 URL 저장하기
+  // Firestore에 게시물 이미지 URL 저장하기
   Future<void> updatePostImageUrls(
       String postId, List<String> imageUrls) async {
     try {
@@ -280,7 +280,7 @@ class FirebaseService {
       final List<String> likes = [];
       final List<Map<String, String>> comments = [];
 
-      await _firestore.collection('posts').add({
+      await _firestore.collection('posts').doc(postId).set({
         'postId': postId,
         'userId': userId,
         'userName': userName,
@@ -296,4 +296,45 @@ class FirebaseService {
       rethrow;
     }
   }
+  Future<void> toggleLikePost(String? postId) async {
+    try {
+      // postId가 null인 경우 함수 종료
+      if (postId == null) {
+        print("postId가 null입니다!");
+        return;
+      }
+
+      // Firestore에서 포스트 문서 가져오기
+      final postDoc = await FirebaseFirestore.instance.collection('posts').doc(postId).get();
+
+      // 문서가 존재하는지 확인
+      if (!postDoc.exists) {
+        print("문서가 존재하지 않습니다!");
+        return; // 문서가 존재하지 않으면 함수 종료
+      }
+      var uid = getCurrentUser()?.uid;
+      // 좋아요 배열 가져오기
+      List<String> Likes = List<String>.from(postDoc['likes'] ?? []);
+
+      // 사용자가 좋아요를 클릭하면
+      if (Likes.contains(uid)) {
+        // 이미 좋아요를 눌렀다면 좋아요 취소
+        Likes.remove(uid);
+      } else {
+        // 좋아요를 눌렀다면 좋아요 추가
+        Likes.add(uid!);
+      }
+
+      // Firestore에 업데이트된 좋아요 배열 저장
+      await FirebaseFirestore.instance.collection('posts').doc(postId).update({
+        'likes': Likes,
+      });
+
+    } catch (e) {
+      print("좋아요 토글 중 에러 발생: $e");
+    }
+  }
+
+
+
 }

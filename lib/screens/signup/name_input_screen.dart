@@ -88,7 +88,7 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
                   } else if (value.length < 3) {
                     return '이름은 최소 3글자 이상이어야 합니다.';
                   } else if (!value.isValidName()) {
-                    return '유효한 이름을 입력해 주세요.';
+                    return '유효한 이름을 입력해 주세요. 한글, 영어만 입력 가능합니다.';
                   }
                   return null;
                 },
