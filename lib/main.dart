@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/router.dart';
 import 'firebase_options.dart';
 
-void main() async{
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -12,13 +14,13 @@ void main() async{
   runApp(const ProviderScope(child: MyApp()));
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
+    return ScreenUtilInit(
+      designSize: const Size(375, 812),
       child: MaterialApp.router(
         routerConfig: CustomRouter.router,
         title: 'Flutter Demo',
@@ -29,3 +31,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

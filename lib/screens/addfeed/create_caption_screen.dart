@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:app_team2/providers/picked_images_provider.dart';
-import 'package:app_team2/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../services/firebase_service.dart';
+
 
 class CreateCaptionScreen extends ConsumerStatefulWidget {
   const CreateCaptionScreen({super.key});

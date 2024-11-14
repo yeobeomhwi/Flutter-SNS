@@ -102,7 +102,7 @@ class FirebaseService {
   }
 
   // 로그아웃 메서드
-  static Future<void> signOut() async {
+  Future<void> signOut() async {
     try {
       await _auth.signOut();
     } catch (e) {
