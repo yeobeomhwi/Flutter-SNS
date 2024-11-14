@@ -170,6 +170,8 @@ class FirebaseService {
       await _firestore.collection('users').doc(userId).update({
         'profileimage': imageUrl, // Firestore에 프로필 이미지 URL 저장
       });
+      final user = getCurrentUser();
+      await user?.updatePhotoURL(imageUrl);
     } catch (e) {
       print("프로필 이미지 URL 저장 오류: $e");
     }
@@ -201,6 +203,28 @@ class FirebaseService {
     } catch (e) {
       print("FCM 토큰 가져오기 중 오류 발생: $e");
       rethrow;
+    }
+  }
+
+  // create post에서 선택한 이미지 목록을 Firebase Storage에 업로드하고 Firestore에 URL 저장
+  Future<void> uploadPostImages(String postId, List<File> imageFileList) async {
+    try {
+      // 각각의 이미지에 대해 반복
+      for (int i = 0; i < imageFileList.length; i++) {
+        final imageFile = imageFileList[i];
+
+        // Firebase Storage에 이미지 업로드
+        final storageRef = _storage.ref().child('post_images/${postId}_$i.jpg');
+        await storageRef.putFile(imageFile);
+
+        // 업로드된 이미지의 다운로드 URL 가져오기
+        final imageUrl = await storageRef.getDownloadURL();
+
+        // Firestore에 다운로드 URL 저장
+        await updateProfileImageUrl(postId, imageUrl); // postId를 사용하여 저장
+      }
+    } catch (e) {
+      print("이미지 업로드 오류: $e");
     }
   }
 
