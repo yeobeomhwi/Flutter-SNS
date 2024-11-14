@@ -29,7 +29,6 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final pageController = ref.watch(pageControllerProvider);
@@ -128,19 +127,27 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
                         formData.update((state) => user);
 
                         // Firebase 서비스로 사용자 등록
-                        await FirebaseService().registerUser(
+                        String result = await FirebaseService().registerUser(
                           formData.state!.email,
                           password.state!,
                           formData.state!.displayName,
                           formData.state!.photoURL,
                         );
-                        await FirebaseService().signOut();
 
-                        // 로그인 화면으로 이동
-                        GoRouter.of(context).go('/Login');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('회원가입이 완료되었습니다..')),
-                        );
+                        // 회원가입 성공 후
+                        if (result == '회원가입이 완료되었습니다.') {
+                          await FirebaseService().signOut();
+                          GoRouter.of(context).go('/Login');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('회원가입이 완료되었습니다..')),
+                          );
+                        } else {
+                          print('먼데이거 $result');
+                          // 실패 메시지를 스낵바로 표시
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(result)),  // 여기서 result가 e.message
+                          );
+                        }
                       } catch (error) {
                         print(error);
                       } finally {
