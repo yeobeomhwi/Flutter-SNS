@@ -17,21 +17,15 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   final PageController _controller = PageController();
-  late bool isLiked;
-  late int likesCount;
+  final List<String> likes = [];
 
   @override
   void initState() {
     super.initState();
-    isLiked = widget.post.isLiked;
-    likesCount = widget.post.likesCount;
   }
 
   void _handleLike() {
-    setState(() {
-      isLiked = !isLiked;
-      likesCount += isLiked ? 1 : -1;
-    });
+    setState(() {});
   }
 
   void _handleComment() {}
@@ -50,7 +44,7 @@ class _PostCardState extends State<PostCard> {
                 backgroundImage: NetworkImage(widget.post.profileImage),
               ),
               const SizedBox(width: 8),
-              Text(widget.post.name),
+              Text(widget.post.userName),
               const Spacer(),
               IconButton(
                 onPressed: () {},
@@ -95,10 +89,7 @@ class _PostCardState extends State<PostCard> {
             children: [
               IconButton(
                 onPressed: _handleLike,
-                icon: Icon(
-                  isLiked ? Icons.favorite : Icons.favorite_border,
-                  color: isLiked ? Colors.red : null,
-                ),
+                icon: const Icon(Icons.favorite),
               ),
               IconButton(
                 onPressed: _handleComment,
@@ -113,12 +104,12 @@ class _PostCardState extends State<PostCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$likesCount likes',
+                '${likes.isNotEmpty ? likes.length : 0} likes',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4.0),
               Text(
-                '${widget.post.name}: ${widget.post.caption}',
+                '${widget.post.userName}: ${widget.post.caption}',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

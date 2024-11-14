@@ -45,20 +45,15 @@ class HomeScreen extends ConsumerWidget {
           final posts = snapshot.data!.docs.map((doc) {
             final data = doc.data() as Map<String, dynamic>;
             return Post(
-              postId: data['postId'],
-              userId: data['userId'] ?? 'unknown',
-              name: data['name'],
-              profileImage: data['profileImage'],
-              caption: data['caption'],
-              imageUrls: List<String>.from(data['imageUrls']),
-              createdAt: (data['createdAt'] as Timestamp).toDate(),
-              isLiked: data['isLiked'] ?? false,
-              likesCount: data['likesCount'] ?? 0,
-              commentsCount: data['commentsCount'] ?? 0,
-              comments: data['comments'] != null
-                  ? Map<String, String>.from(data['comments'])
-                  : null, // 댓글 정보
-            ); // 초기화된 댓글
+                postId: data['postId'],
+                userId: data['userId'] ?? 'unknown',
+                userName: data['userName'],
+                profileImage: data['profileImage'],
+                caption: data['caption'],
+                imageUrls: List<String>.from(data['imageUrls']),
+                createdAt: (data['createdAt'] as Timestamp).toDate(),
+                likes: List<String>.from(data['likes'] ?? []),
+                comments: List<Map<String, String>>.from(data['comments']));
           }).toList();
 
           // 포스트가 없을 경우 메시지 표시

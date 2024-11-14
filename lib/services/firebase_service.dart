@@ -262,26 +262,26 @@ class FirebaseService {
       }
 
       final userData = userDoc.data() as Map<String, dynamic>;
-      final String name = userData['name'];
+      final String userName = userData['name'];
       final String profileImage = userData['profileimage'] ?? '';
       final imageUrls = await uploadPostImages(postId, imagePaths);
+      final List<String> likes = [];
+      final List<Map<String, String>> comments = [];
 
       await _firestore.collection('posts').add({
         'postId': postId,
-        'userId': userId, // 사용자 ID 추가
-        'name': name, // 사용자 이름 추가
-        'profileImage': profileImage, // 프로필 이미지 추가
+        'userId': userId,
+        'userName': userName,
+        'profileImage': profileImage,
         'caption': caption,
         'imageUrls': imageUrls,
         'createdAt': FieldValue.serverTimestamp(),
-        'isLiked': false,
-        'likesCount': 0,
-        'commentsCount': 0,
-        'comments': {}, // 초기화된 댓글
+        'likes': likes,
+        'comments': comments,
       });
     } catch (e) {
       print("포스트 생성 중 오류 발생: $e");
-      rethrow; // 오류 다시 던지기
+      rethrow;
     }
   }
 }
