@@ -17,27 +17,18 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   final PageController _controller = PageController();
-  late bool isLiked;
-  late int likesCount;
+  final List<String> likes = [];
 
   @override
   void initState() {
     super.initState();
-    isLiked = widget.post.isLiked;
-    likesCount = widget.post.likesCount;
   }
 
   void _handleLike() {
-    setState(() {
-      isLiked = !isLiked;
-      likesCount += isLiked ? 1 : -1;
-    });
-
+    setState(() {});
   }
 
-  void _handleComment() {
-
-  }
+  void _handleComment() {}
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +41,10 @@ class _PostCardState extends State<PostCard> {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: NetworkImage(widget.post.user.profileImage),
+                backgroundImage: NetworkImage(widget.post.profileImage),
               ),
               const SizedBox(width: 8),
-              Text(widget.post.user.name),
+              Text(widget.post.userName),
               const Spacer(),
               IconButton(
                 onPressed: () {},
@@ -98,10 +89,7 @@ class _PostCardState extends State<PostCard> {
             children: [
               IconButton(
                 onPressed: _handleLike,
-                icon: Icon(
-                  isLiked ? Icons.favorite : Icons.favorite_border,
-                  color: isLiked ? Colors.red : null,
-                ),
+                icon: const Icon(Icons.favorite),
               ),
               IconButton(
                 onPressed: _handleComment,
@@ -116,12 +104,12 @@ class _PostCardState extends State<PostCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$likesCount likes',
+                '${likes.isNotEmpty ? likes.length : 0} likes',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4.0),
               Text(
-                '${widget.post.user.name}: ${widget.post.caption}',
+                '${widget.post.userName}: ${widget.post.caption}',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -140,7 +128,7 @@ class _PostCardState extends State<PostCard> {
 
   String _getTimeAgo(DateTime dateTime) {
     final difference = DateTime.now().difference(dateTime);
-    
+
     if (difference.inDays > 0) {
       return '${difference.inDays}d ago';
     } else if (difference.inHours > 0) {

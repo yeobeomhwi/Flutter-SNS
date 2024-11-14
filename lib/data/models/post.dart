@@ -1,51 +1,47 @@
-
-
-import 'package:app_team2/data/models/user.dart';
-
 class Post {
-  final String id;
-  final User user;
+  final String postId;
+  final String userId;
+  final String userName;
+  final String profileImage;
   final List<String> imageUrls;
   final String caption;
   final DateTime createdAt;
-  final bool isLiked;
-  final int likesCount;
-  final Map<String, String>? comments; 
-  final int commentsCount;
+  final List<String> likes; // userId들을 받을 계획
+  final List<Map<String, String>> comments;
 
   const Post({
-    required this.id,
-    required this.user,
+    required this.postId,
+    required this.userId,
+    required this.userName,
+    required this.profileImage,
     required this.imageUrls,
     required this.caption,
     required this.createdAt,
-    this.isLiked = false,
-    this.likesCount = 0,
-    this.comments, 
-    this.commentsCount = 0,
+    required this.likes,
+    required this.comments,
   });
 
   Post copyWith({
-    String? id,
-    User? user,
+    String? postId,
+    String? userId,
+    String? userName,
+    String? profileImage,
     List<String>? imageUrls,
     String? caption,
     DateTime? createdAt,
-    bool? isLiked,
-    int? likesCount,
-    Map<String, String>? comments,
-    int? commentsCount,
+    List<String>? likes,
+    List<Map<String, String>>? comments,
   }) {
     return Post(
-      id: id ?? this.id,
-      user: user ?? this.user,
+      postId: postId ?? this.postId,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      profileImage: profileImage ?? this.profileImage,
       imageUrls: imageUrls ?? this.imageUrls,
       caption: caption ?? this.caption,
       createdAt: createdAt ?? this.createdAt,
-      isLiked: isLiked ?? this.isLiked,
-      likesCount: likesCount ?? this.likesCount,
+      likes: likes ?? this.likes,
       comments: comments ?? this.comments,
-      commentsCount: commentsCount ?? this.commentsCount,
     );
   }
 }
