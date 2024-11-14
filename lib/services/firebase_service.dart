@@ -69,18 +69,25 @@ class FirebaseService {
       return e.message ?? '로그인에 실패했습니다.';
     }
   }
-
-  //회원가입
   Future<String> registerUser(String email, String password, String name,
       String profileImageUrl) async {
     try {
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
+      // 이메일 중복 확인
+      final signInMethods = await _auth.fetchSignInMethodsForEmail(email);
+
+      // 이미 이메일이 존재하면 로그인 처리하거나 오류 메시지 반환
+      if (signInMethods.isNotEmpty) {
+        return '이미 존재하는 이메일입니다. 로그인해주세요.';
+      }
+
+      // 이메일이 존재하지 않으면 회원가입
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
       User? user = _auth.currentUser;
 
+      // 사용자 정보 업데이트
       await user?.updateDisplayName(name);
       await user?.updatePhotoURL(profileImageUrl);
 
@@ -95,11 +102,15 @@ class FirebaseService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      return '회원가입이 완료되었습니다.';
+      return '회원가입이 완료되었습니다.';  // 성공 메시지
     } on FirebaseAuthException catch (e) {
-      return e.message ?? '회원가입에 실패했습니다.';
+      if (e.code == 'email-already-in-use') {
+        return '이미 존재하는 이메일입니다. 로그인해주세요.';
+      }
+      return e.message ?? '회원가입에 실패했습니다.';  // 다른 오류 처리
     }
   }
+
 
   // 로그아웃 메서드
   Future<void> signOut() async {
@@ -187,6 +198,7 @@ class FirebaseService {
       // 업로드된 이미지의 다운로드 URL 가져오기
       final imageUrl = await storageRef.getDownloadURL();
 
+      print(imageUrl);
       // Firestore에 다운로드 URL 저장
       await updateProfileImageUrl(userId, imageUrl);
     } catch (e) {
@@ -206,7 +218,7 @@ class FirebaseService {
     }
   }
 
-  // Firestore에 프로필 이미지 URL 저장하기
+  // Firestore에 게시물 이미지 URL 저장하기
   Future<void> updatePostImageUrls(
       String postId, List<String> imageUrls) async {
     try {
@@ -268,7 +280,7 @@ class FirebaseService {
       final List<String> likes = [];
       final List<Map<String, String>> comments = [];
 
-      await _firestore.collection('posts').add({
+      await _firestore.collection('posts').doc(postId).set({
         'postId': postId,
         'userId': userId,
         'userName': userName,
@@ -284,4 +296,45 @@ class FirebaseService {
       rethrow;
     }
   }
+  Future<void> toggleLikePost(String? postId) async {
+    try {
+      // postId가 null인 경우 함수 종료
+      if (postId == null) {
+        print("postId가 null입니다!");
+        return;
+      }
+
+      // Firestore에서 포스트 문서 가져오기
+      final postDoc = await FirebaseFirestore.instance.collection('posts').doc(postId).get();
+
+      // 문서가 존재하는지 확인
+      if (!postDoc.exists) {
+        print("문서가 존재하지 않습니다!");
+        return; // 문서가 존재하지 않으면 함수 종료
+      }
+      var uid = getCurrentUser()?.uid;
+      // 좋아요 배열 가져오기
+      List<String> Likes = List<String>.from(postDoc['likes'] ?? []);
+
+      // 사용자가 좋아요를 클릭하면
+      if (Likes.contains(uid)) {
+        // 이미 좋아요를 눌렀다면 좋아요 취소
+        Likes.remove(uid);
+      } else {
+        // 좋아요를 눌렀다면 좋아요 추가
+        Likes.add(uid!);
+      }
+
+      // Firestore에 업데이트된 좋아요 배열 저장
+      await FirebaseFirestore.instance.collection('posts').doc(postId).update({
+        'likes': Likes,
+      });
+
+    } catch (e) {
+      print("좋아요 토글 중 에러 발생: $e");
+    }
+  }
+
+
+
 }

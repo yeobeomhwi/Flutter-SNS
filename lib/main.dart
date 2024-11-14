@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/router.dart';
 import 'firebase_options.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -24,11 +23,26 @@ class MyApp extends StatelessWidget {
       child: MaterialApp.router(
         routerConfig: CustomRouter.router,
         title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
+        theme: ThemeData.light().copyWith(
+          scaffoldBackgroundColor: Colors.white,
+          appBarTheme: AppBarTheme(
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black
+          ),
+          primaryColor: Colors.white,
+          bottomNavigationBarTheme: BottomNavigationBarThemeData(
+            backgroundColor: Colors.white,
+              selectedItemColor: Colors.black,
+          )
+        ), // 기본 라이트모드 테마
+        darkTheme: ThemeData.dark().copyWith(
+            bottomNavigationBarTheme: BottomNavigationBarThemeData(
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.grey
+            )
+        ), // 기본 다크모드 테마
+        themeMode: ThemeMode.system, // 시스템 설정에 따라 자동 전환
       ),
     );
   }
 }
-

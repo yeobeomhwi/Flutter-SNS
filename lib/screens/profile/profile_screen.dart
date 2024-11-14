@@ -15,6 +15,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+
   Future<void> _pickAndUploadImage(BuildContext context, String userId) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -59,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             // 프로필 이미지
             CircleAvatar(
-              backgroundColor: Colors.grey[200],
+              backgroundColor: Colors.grey,
               backgroundImage: NetworkImage(
                 currentUser.photoURL ??
                     'https://firebasestorage.googleapis.com/v0/b/app-team2-2.firebasestorage.app/o/Default-Profile.png?alt=media&token=7da8bc98-ff57-491a-81a7-113b4a25cc62',

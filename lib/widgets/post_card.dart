@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-
 import 'package:app_team2/data/models/post.dart';
+
+import '../services/firebase_service.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;
@@ -17,18 +18,26 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   final PageController _controller = PageController();
-  final List<String> likes = [];
+  List<String> likes = [];
 
   @override
   void initState() {
     super.initState();
+    likes = List<String>.from(widget.post.likes); // 초기 likes 설정
+    print(likes);
   }
 
-  void _handleLike() {
-    setState(() {});
-  }
+  // Firestore에서 포스트의 좋아요 상태를 토글하는 함수
+  Future<void> toggleLike(String postId) async {
+    // Call the toggleLikePost method from FirebaseService
+    await FirebaseService().toggleLikePost(postId);
 
-  void _handleComment() {}
+    // Optionally, you can update the local state to reflect the changes (if needed)
+    setState(() {
+      likes = List<String>.from(widget.post.likes);
+    });
+  }
+  var uid = FirebaseService().getCurrentUserUid();
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +51,7 @@ class _PostCardState extends State<PostCard> {
               CircleAvatar(
                 radius: 20,
                 backgroundImage: NetworkImage(widget.post.profileImage),
+                backgroundColor: Colors.grey,
               ),
               const SizedBox(width: 8),
               Text(widget.post.userName),
@@ -88,11 +98,17 @@ class _PostCardState extends State<PostCard> {
           child: Row(
             children: [
               IconButton(
-                onPressed: _handleLike,
-                icon: const Icon(Icons.favorite),
+                onPressed: () {
+                  // Firestore에서 좋아요 상태를 토글
+                  toggleLike(widget.post.postId);
+                },
+                icon: Icon(
+                  Icons.favorite,
+                  color: likes.contains(uid) ? Colors.red : null,
+                ),
               ),
               IconButton(
-                onPressed: _handleComment,
+                onPressed: () {},
                 icon: const Icon(Icons.comment_outlined),
               ),
             ],
@@ -104,7 +120,7 @@ class _PostCardState extends State<PostCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${likes.isNotEmpty ? likes.length : 0} likes',
+                '${likes.length} likes',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4.0),
@@ -121,7 +137,7 @@ class _PostCardState extends State<PostCard> {
             ],
           ),
         ),
-        const Divider()
+        const Divider(),
       ],
     );
   }
