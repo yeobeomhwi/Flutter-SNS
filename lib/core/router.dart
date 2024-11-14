@@ -1,3 +1,4 @@
+import 'package:app_team2/screens/UserListScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/addfeed/create_caption_screen.dart';
@@ -30,13 +31,18 @@ class CustomRouter {
         path: '/Signup',
         builder: (context, state) => const SignupScreen(),
       ),
+      GoRoute(
+        path: '/data',
+        builder: (context, state) => UserListScreen(),
+      ),
     ],
     redirect: (context, state) {
       final User? user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
         // 로그인 화면 또는 회원가입 화면으로 접근할 수 있도록 수정
-        if (state.uri.toString() != '/Login' && state.uri.toString() != '/Signup') {
+        if (state.uri.toString() != '/Login' &&
+            state.uri.toString() != '/Signup') {
           return '/Login';
         }
       }

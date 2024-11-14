@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';  // 추가
+import 'package:flutter_screenutil/flutter_screenutil.dart'; // 추가
 import '../../services/firebase_service.dart';
 import '../../widgets/infinity_button.dart';
 
@@ -15,7 +15,6 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-
   Future<void> _pickAndUploadImage(BuildContext context, String userId) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -45,15 +44,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final FirebaseService firebaseService = FirebaseService();
     final User? currentUser = firebaseService.getCurrentUser();
 
-    if (currentUser == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Profile')),
-        body: const Center(child: Text('로그인된 사용자가 없습니다.')),
-      );
-    }
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        title: const Text('Profile'),
+        leading: IconButton(
+            onPressed: () {
+              GoRouter.of(context).push('/data');
+            },
+            icon: Icon(Icons.camera_alt)),
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -62,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             CircleAvatar(
               backgroundColor: Colors.grey,
               backgroundImage: NetworkImage(
-                currentUser.photoURL ??
+                currentUser?.photoURL ??
                     'https://firebasestorage.googleapis.com/v0/b/app-team2-2.firebasestorage.app/o/Default-Profile.png?alt=media&token=7da8bc98-ff57-491a-81a7-113b4a25cc62',
               ),
               radius: 100.w,
@@ -72,7 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // 이름
             Text(
-              '이름: ${currentUser.displayName ?? '이름 없음'}',
+              '이름: ${currentUser?.displayName ?? '이름 없음'}',
               style: TextStyle(fontSize: 18.sp),
             ),
 
@@ -80,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // 이메일
             Text(
-              '이메일: ${currentUser.email ?? '이메일 없음'}',
+              '이메일: ${currentUser?.email ?? '이메일 없음'}',
               style: TextStyle(fontSize: 18.sp),
             ),
 
@@ -88,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             //UID
             Text(
-              'UID: ${currentUser.uid}',
+              'UID: ${currentUser?.uid}',
               style: TextStyle(fontSize: 18.sp),
             ),
 
@@ -96,17 +95,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             //구분선
             Padding(
-              padding: EdgeInsets.all(16.w),  // flutter_screenutil 적용
+              padding: EdgeInsets.all(16.w), // flutter_screenutil 적용
               child: Divider(),
             ),
 
             //프로필사진 변경 버튼
             InfinityButton(
-              onPressed: () => _pickAndUploadImage(context, currentUser.uid),
+              onPressed: () => _pickAndUploadImage(context, currentUser!.uid),
               title: '프로필 사진 변경',
             ),
 
-            SizedBox(height: 5.h),  // flutter_screenutil 적용
+            SizedBox(height: 5.h), // flutter_screenutil 적용
 
             //로그아웃 버튼
             InfinityButton(

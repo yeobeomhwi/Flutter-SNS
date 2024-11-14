@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'package:app_team2/data/local/DatabaseHelper.dart';
+import 'package:app_team2/data/models/usermodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -69,6 +70,8 @@ class FirebaseService {
       return e.message ?? '로그인에 실패했습니다.';
     }
   }
+
+  //회원가입
   Future<String> registerUser(String email, String password, String name,
       String profileImageUrl) async {
     try {
@@ -81,7 +84,8 @@ class FirebaseService {
       }
 
       // 이메일이 존재하지 않으면 회원가입
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -102,15 +106,14 @@ class FirebaseService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      return '회원가입이 완료되었습니다.';  // 성공 메시지
+      return '회원가입이 완료되었습니다.'; // 성공 메시지
     } on FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
         return '이미 존재하는 이메일입니다. 로그인해주세요.';
       }
-      return e.message ?? '회원가입에 실패했습니다.';  // 다른 오류 처리
+      return e.message ?? '회원가입에 실패했습니다.'; // 다른 오류 처리
     }
   }
-
 
   // 로그아웃 메서드
   Future<void> signOut() async {
@@ -296,6 +299,8 @@ class FirebaseService {
       rethrow;
     }
   }
+
+  //좋아요
   Future<void> toggleLikePost(String? postId) async {
     try {
       // postId가 null인 경우 함수 종료
@@ -305,7 +310,10 @@ class FirebaseService {
       }
 
       // Firestore에서 포스트 문서 가져오기
-      final postDoc = await FirebaseFirestore.instance.collection('posts').doc(postId).get();
+      final postDoc = await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .get();
 
       // 문서가 존재하는지 확인
       if (!postDoc.exists) {
@@ -329,12 +337,8 @@ class FirebaseService {
       await FirebaseFirestore.instance.collection('posts').doc(postId).update({
         'likes': Likes,
       });
-
     } catch (e) {
       print("좋아요 토글 중 에러 발생: $e");
     }
   }
-
-
-
 }
