@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../services/firebase_service.dart';
+import '../../widgets/showloading.dart';
 
 
 class CreateCaptionScreen extends ConsumerStatefulWidget {
@@ -135,6 +136,8 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                 ElevatedButton(
                   onPressed: () async {
                     try {
+                      // 로딩 다이얼로그 표시
+                      ShowLoadingDialog.show(context);
                       // 포스트 생성
                       await firebaseService.createPost(
                         userId!,
@@ -164,6 +167,9 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('오류가 발생했습니다.: $e')),
                       );
+                    }finally {
+                      // 로딩 다이얼로그 종료
+                      ShowLoadingDialog.hide(context);
                     }
                   },
                   style: ElevatedButton.styleFrom(

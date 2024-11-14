@@ -1,4 +1,4 @@
-import 'package:app_team2/screens/UserListScreen.dart';
+import 'package:app_team2/screens/profile/UserListScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/addfeed/create_caption_screen.dart';

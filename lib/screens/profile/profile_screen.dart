@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:app_team2/data/local/data_base_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -53,78 +54,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             icon: Icon(Icons.camera_alt)),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // 프로필 이미지
-            CircleAvatar(
-              backgroundColor: Colors.grey,
-              backgroundImage: NetworkImage(
-                currentUser?.photoURL ??
-                    'https://firebasestorage.googleapis.com/v0/b/app-team2-2.firebasestorage.app/o/Default-Profile.png?alt=media&token=7da8bc98-ff57-491a-81a7-113b4a25cc62',
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 프로필 이미지
+              CircleAvatar(
+                backgroundColor: Colors.grey,
+                backgroundImage: NetworkImage(
+                  currentUser?.photoURL ??
+                      'https://firebasestorage.googleapis.com/v0/b/app-team2-2.firebasestorage.app/o/Default-Profile.png?alt=media&token=7da8bc98-ff57-491a-81a7-113b4a25cc62',
+                ),
+                radius: 100.w,
               ),
-              radius: 100.w,
-            ),
 
-            SizedBox(height: 16.h),
+              SizedBox(height: 16.h),
 
-            // 이름
-            Text(
-              '이름: ${currentUser?.displayName ?? '이름 없음'}',
-              style: TextStyle(fontSize: 18.sp),
-            ),
+              // 이름
+              Text(
+                '이름: ${currentUser?.displayName ?? '이름 없음'}',
+                style: TextStyle(fontSize: 18.sp),
+              ),
 
-            SizedBox(height: 16.h),
+              SizedBox(height: 16.h),
 
-            // 이메일
-            Text(
-              '이메일: ${currentUser?.email ?? '이메일 없음'}',
-              style: TextStyle(fontSize: 18.sp),
-            ),
+              // 이메일
+              Text(
+                '이메일: ${currentUser?.email ?? '이메일 없음'}',
+                style: TextStyle(fontSize: 18.sp),
+              ),
 
-            SizedBox(height: 16.h),
+              SizedBox(height: 16.h),
 
-            //UID
-            Text(
-              'UID: ${currentUser?.uid}',
-              style: TextStyle(fontSize: 18.sp),
-            ),
+              //UID
+              Text(
+                'UID: ${currentUser?.uid}',
+                style: TextStyle(fontSize: 18.sp),
+              ),
 
-            SizedBox(height: 16.h),
+              SizedBox(height: 16.h),
 
-            //구분선
-            Padding(
-              padding: EdgeInsets.all(16.w), // flutter_screenutil 적용
-              child: Divider(),
-            ),
+              //구분선
+              Padding(
+                padding: EdgeInsets.all(16.w), // flutter_screenutil 적용
+                child: Divider(),
+              ),
 
-            //프로필사진 변경 버튼
-            InfinityButton(
-              onPressed: () => _pickAndUploadImage(context, currentUser!.uid),
-              title: '프로필 사진 변경',
-            ),
+              //프로필사진 변경 버튼
+              InfinityButton(
+                onPressed: () => _pickAndUploadImage(context, currentUser!.uid),
+                title: '프로필 사진 변경',
+              ),
 
-            SizedBox(height: 5.h), // flutter_screenutil 적용
+              SizedBox(height: 5.h), // flutter_screenutil 적용
 
-            //로그아웃 버튼
-            InfinityButton(
-              onPressed: () async {
-                try {
-                  await FirebaseService().signOut();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('로그아웃 되었습니다.')),
-                  );
-                  GoRouter.of(context).push('/Login');
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('로그아웃 실패: $e')),
-                  );
-                }
-              },
-              title: '로그아웃',
-            ),
-          ],
+              //로그아웃 버튼
+              InfinityButton(
+                onPressed: () async {
+                  try {
+                    await FirebaseService().signOut();
+                    await DatabaseHelper.instance
+                        .deleteUser(currentUser?.uid ?? '');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('로그아웃 되었습니다.')),
+                    );
+                    GoRouter.of(context).push('/Login');
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('로그아웃 실패: $e')),
+                    );
+                  }
+                },
+                title: '로그아웃',
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -5,7 +5,3 @@ import '../services/firebase_service.dart';
 
 final firebaseAuthProvider = Provider((ref) => FirebaseAuth.instance);
 final firestoreProvider = Provider((ref) => FirebaseFirestore.instance);
-
-final firebaseServiceProvider = Provider<FirebaseService>((ref) {
-  return FirebaseService(); // FirebaseService의 인스턴스를 반환
-});

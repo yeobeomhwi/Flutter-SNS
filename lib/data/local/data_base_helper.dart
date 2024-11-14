@@ -49,6 +49,21 @@ class DatabaseHelper {
     return result.map((map) => UserModel.fromMap(map)).toList();
   }
 
+  // 특정 사용자 정보 가져오기 (현재 사용자)
+  Future<UserModel?> getUser(String uid) async {
+    final db = await instance.database;
+    final result = await db.query(
+      'users',
+      where: 'uid = ?',
+      whereArgs: [uid],
+    );
+    if (result.isNotEmpty) {
+      return UserModel.fromMap(result.first);
+    } else {
+      return null; // 사용자 정보가 없으면 null 반환
+    }
+  }
+
   // 사용자 삭제
   Future<void> deleteUser(String uid) async {
     final db = await instance.database;

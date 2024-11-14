@@ -9,8 +9,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class HomeScreen extends ConsumerWidget {
   HomeScreen({super.key});
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
