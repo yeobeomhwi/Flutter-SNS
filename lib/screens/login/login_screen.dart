@@ -93,15 +93,22 @@ class _LoginScreen2State extends State<LoginScreen> {
                   onPressed: () async {
                     if (emailController.text.isNotEmpty &&
                         passwordController.text.isNotEmpty) {
-                      await firebaseService.signInWithEmailPassword(
-                        emailController.text,
-                        passwordController.text,
-                      );
-                      GoRouter.of(context).go('/Main');
+                      try {
+                        await firebaseService.signInWithEmailPassword(
+                          emailController.text,
+                          passwordController.text,
+                        );
+                        GoRouter.of(context).go('/Main');
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('로그인 실패: $e')),
+                        );
+                      }
                     }
                   },
                 ),
               ),
+
               SizedBox(height: 10.h),
 
               // 구글 로그인 버튼
@@ -129,7 +136,33 @@ class _LoginScreen2State extends State<LoginScreen> {
               SizedBox(height: 10.h),
 
               // 회원가입 버튼
-              SignUp(),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15.w),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      "Don't have an account?",
+                      style: TextStyle(fontSize: 13.sp, color: Colors.grey),
+                    ),
+                    SizedBox(width: 5.w),
+                    TextButton(
+                      onPressed: () {
+                        print('분명누름');
+                        GoRouter.of(context).push('/Signup');
+                      },
+                      child: Text(
+                        "SignUp",
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
             ],
           ),
         ),

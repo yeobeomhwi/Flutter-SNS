@@ -1,19 +1,18 @@
-import 'package:app_team2/screens/signup/signup_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
-
 import '../screens/addfeed/create_caption_screen.dart';
 import '../screens/addfeed/create_post_screen.dart';
 import '../screens/login/login_screen.dart';
 import '../screens/main_screen.dart';
+import '../screens/signup/signup_screen.dart';
 
 class CustomRouter {
   static GoRouter router = GoRouter(
-    initialLocation: "/Login",
+    initialLocation: "/Signup",
     routes: [
       GoRoute(
         path: "/Login",
-        builder: (context, state) => LoginScreen(),
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: "/Main",
@@ -25,24 +24,23 @@ class CustomRouter {
       ),
       GoRoute(
         path: "/CreateCaption",
-        builder: (context, state) => CreateCaptionScreen(),
+        builder: (context, state) => const CreateCaptionScreen(),
       ),
       GoRoute(
-        path: "/Signup",
-        builder: (context, state) => SignUpScreens(),
+        path: '/Signup',
+        builder: (context, state) => const SignupScreen(),
       ),
     ],
     redirect: (context, state) {
       final User? user = FirebaseAuth.instance.currentUser;
 
-      // 로그인하지 않은 경우 로그인 화면으로 리디렉션
       if (user == null) {
-        if (state.uri.toString() != '/Login') {
-          return '/Login'; // 로그인 화면으로 리디렉션
+        // 로그인 화면 또는 회원가입 화면으로 접근할 수 있도록 수정
+        if (state.uri.toString() != '/Login' && state.uri.toString() != '/Signup') {
+          return '/Login';
         }
       }
 
-      // 로그인한 경우 Main 화면으로 리디렉션
       if (user != null && state.uri.toString() == '/Login') {
         return '/Main'; // 메인 화면으로 리디렉션
       }
