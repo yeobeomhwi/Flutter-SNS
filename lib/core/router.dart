@@ -1,24 +1,18 @@
-import 'package:app_team2/screens/signup/signup.dart';
+import 'package:app_team2/screens/signup/signup_screen.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../screens/addfeed/create_caption_screen.dart';
 import '../screens/addfeed/create_post_screen.dart';
 import '../screens/login/login_screen.dart';
 import '../screens/main_screen.dart';
-import '../screens/signup/signup_screen.dart';
 
 class CustomRouter {
   static GoRouter router = GoRouter(
-    initialLocation: "/test",
+    initialLocation: "/Login",
     routes: [
       GoRoute(
         path: "/Login",
         builder: (context, state) => LoginScreen(),
-      ),
-      GoRoute(
-        path: "/Signup",
-        builder: (context, state) => const SignupScreen(),
       ),
       GoRoute(
         path: "/Main",
@@ -33,7 +27,7 @@ class CustomRouter {
         builder: (context, state) => CreateCaptionScreen(),
       ),
       GoRoute(
-        path: "/test",
+        path: "/Signup",
         builder: (context, state) => SignUpScreens(),
       ),
     ],

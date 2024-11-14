@@ -34,8 +34,8 @@ class FirebaseService {
 
       // 인증 정보를 가져옴
 
-      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
-
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
 
       // Firebase 인증 자격 증명 생성
       final credential = GoogleAuthProvider.credential(
@@ -44,13 +44,15 @@ class FirebaseService {
       );
 
       // Firebase로 로그인
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
 
       User? user = userCredential.user;
 
       // Firestore에서 사용자 문서 확인 및 새 사용자일 경우 추가
       if (user != null) {
-        DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
 
         if (!userDoc.exists) {
           // Firestore에 새 사용자 정보 저장
@@ -68,7 +70,6 @@ class FirebaseService {
       return e.message ?? '로그인에 실패했습니다.';
     }
   }
-
 
   //회원가입
   Future<String> registerUser(String email, String password, String name,
@@ -102,7 +103,7 @@ class FirebaseService {
   }
 
   // 로그아웃 메서드
-  static Future<void> signOut() async {
+  Future<void> signOut() async {
     try {
       await _auth.signOut();
     } catch (e) {

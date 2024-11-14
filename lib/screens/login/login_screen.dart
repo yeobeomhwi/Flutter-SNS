@@ -1,11 +1,11 @@
+import 'package:app_team2/utils/extensions/email_vaildator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_login_buttons/social_login_buttons.dart';
 import '../../services/firebase_service.dart';
 import '../../widgets/login/signup.dart';
-import '../../widgets/login/textfiled.dart';
-import '../../widgets/login/forgot.dart';
+import '../../widgets/login/custom_textfiled.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,84 +15,123 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreen2State extends State<LoginScreen> {
-  final firebaseService = FirebaseService(); // FirebaseService 인스턴스 생성
-  final emailController = TextEditingController();
-  FocusNode email_F = FocusNode();
-  final passwordController = TextEditingController();
-  FocusNode password_F = FocusNode();
+  final FirebaseService firebaseService = FirebaseService();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final FocusNode emailFocus = FocusNode();
+  final FocusNode passwordFocus = FocusNode();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    emailFocus.dispose();
+    passwordFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            SizedBox(width: 96.w, height: 100.w),
-            Center(child: Text('Logo')),
-            SizedBox(height: 120.h),
-            TextFiled(
-              controller: emailController,
-              icon: Icons.email,
-              type: 'Email',
-              focusNode: email_F,
-              isPassword: false,
-            ),
-            SizedBox(height: 15.h),
-            TextFiled(
-              controller: passwordController,
-              icon: Icons.lock,
-              type: 'Password',
-              focusNode: password_F,
-              isPassword: false,
-            ),
-            SizedBox(height: 10.h),
-            Forgot(),
-            SizedBox(height: 10.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.w),
-              child: SocialLoginButton(
-                backgroundColor: Colors.black,
-                height: 50,
-                text: 'Login',
-                textColor: Colors.white,
-                fontSize: 16,
-                buttonType: SocialLoginButtonType.generalLogin,
-                onPressed: () async {
-                  await firebaseService.signInWithEmailPassword(
-                    emailController.text,
-                    passwordController.text,
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 10.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10.w),
-              child: SocialLoginButton(
-                backgroundColor: Colors.black,
-                textColor: Colors.white,
-                buttonType: SocialLoginButtonType.google,
-                onPressed: () async {
-                  try {
-                    await firebaseService.signInWithGoogle(); // 구글 로그인 호출
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('구글 로그인 성공')),
-                    );
-                    GoRouter.of(context).go('/Main'); // 로그인 후 홈 화면으로 이동
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('구글 로그인 실패: $e')),
-                    );
-                    print(e);
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10.w), // 전체적인 Padding 추가
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 96.w), // 위쪽 공간
+              const Center(child: Text('Logo')), // 로고 위치
+              SizedBox(height: 120.h), // 로고와 입력 필드 사이의 공간
+
+              // 이메일 입력 필드
+              CustomTextFiled(
+                controller: emailController,
+                icon: Icons.account_circle,
+                type: 'Email',
+                focusNode: emailFocus,
+                isPassword: false,
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return '이메일을 입력해 주세요.';
+                  } else if (!value.isValidEmail()) {
+                    return '유효한 이메일을 입력해 주세요.';
                   }
+                  return null;
                 },
               ),
-            ),
-            SizedBox(height: 10.h),
-            SignUp()
-          ],
+              SizedBox(height: 15.h),
+
+              // 비밀번호 입력 필드
+              CustomTextFiled(
+                controller: passwordController,
+                icon: Icons.lock,
+                type: 'Password',
+                focusNode: passwordFocus,
+                isPassword: true,
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return '비밀번호를 입력해 주세요.';
+                  } else if (value.length < 6) {
+                    return '비밀번호는 최소 6자리 이상이여야 합니다.';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 10.h),
+
+              // 로그인 버튼
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
+                child: SocialLoginButton(
+                  backgroundColor: Colors.black,
+                  height: 50,
+                  text: 'Login',
+                  textColor: Colors.white,
+                  fontSize: 16,
+                  buttonType: SocialLoginButtonType.generalLogin,
+                  onPressed: () async {
+                    if (emailController.text.isNotEmpty &&
+                        passwordController.text.isNotEmpty) {
+                      await firebaseService.signInWithEmailPassword(
+                        emailController.text,
+                        passwordController.text,
+                      );
+                      GoRouter.of(context).go('/Main');
+                    }
+                  },
+                ),
+              ),
+              SizedBox(height: 10.h),
+
+              // 구글 로그인 버튼
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
+                child: SocialLoginButton(
+                  backgroundColor: Colors.black,
+                  textColor: Colors.white,
+                  buttonType: SocialLoginButtonType.google,
+                  onPressed: () async {
+                    try {
+                      await firebaseService.signInWithGoogle();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('구글 로그인 성공')),
+                      );
+                      GoRouter.of(context).go('/Main');
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('구글 로그인 실패: $e')),
+                      );
+                    }
+                  },
+                ),
+              ),
+              SizedBox(height: 10.h),
+
+              // 회원가입 버튼
+              SignUp(),
+            ],
+          ),
         ),
       ),
     );
