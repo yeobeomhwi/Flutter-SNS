@@ -8,7 +8,7 @@ import '../screens/signup/signup_screen.dart';
 
 class CustomRouter {
   static GoRouter router = GoRouter(
-    initialLocation: "/Signup",
+    initialLocation: "/Login",
     routes: [
       GoRoute(
         path: "/Login",
