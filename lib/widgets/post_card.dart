@@ -32,12 +32,9 @@ class _PostCardState extends State<PostCard> {
       isLiked = !isLiked;
       likesCount += isLiked ? 1 : -1;
     });
-
   }
 
-  void _handleComment() {
-
-  }
+  void _handleComment() {}
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +47,10 @@ class _PostCardState extends State<PostCard> {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: NetworkImage(widget.post.user.profileImage),
+                backgroundImage: NetworkImage(widget.post.profileImage),
               ),
               const SizedBox(width: 8),
-              Text(widget.post.user.name),
+              Text(widget.post.name),
               const Spacer(),
               IconButton(
                 onPressed: () {},
@@ -121,7 +118,7 @@ class _PostCardState extends State<PostCard> {
               ),
               const SizedBox(height: 4.0),
               Text(
-                '${widget.post.user.name}: ${widget.post.caption}',
+                '${widget.post.name}: ${widget.post.caption}',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -140,7 +137,7 @@ class _PostCardState extends State<PostCard> {
 
   String _getTimeAgo(DateTime dateTime) {
     final difference = DateTime.now().difference(dateTime);
-    
+
     if (difference.inDays > 0) {
       return '${difference.inDays}d ago';
     } else if (difference.inHours > 0) {

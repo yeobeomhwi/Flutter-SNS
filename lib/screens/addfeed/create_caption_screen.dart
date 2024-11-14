@@ -29,8 +29,8 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   @override
   Widget build(BuildContext context) {
     final pickedImages = ref.watch(pickedImagesProvider);
-    final List<String> imagePaths =
-        pickedImages.map((xFile) => xFile.path).toList();
+    final List<File> imagePaths =
+        pickedImages.map((xFile) => File(xFile.path)).toList();
     final reversedImages = pickedImages.reversed.toList();
     final userId = firebaseService.getCurrentUserUid();
 
@@ -139,7 +139,7 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                         _captionController.text,
                         imagePaths,
                       );
-                      
+
                       // 성공 메시지 표시
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

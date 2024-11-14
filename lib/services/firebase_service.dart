@@ -206,9 +206,24 @@ class FirebaseService {
     }
   }
 
-  // create post에서 선택한 이미지 목록을 Firebase Storage에 업로드하고 Firestore에 URL 저장
-  Future<void> uploadPostImages(String postId, List<File> imageFileList) async {
+  // Firestore에 프로필 이미지 URL 저장하기
+  Future<void> updatePostImageUrls(
+      String postId, List<String> imageUrls) async {
     try {
+      await _firestore.collection('posts').doc(postId).update({
+        'imageUrls': imageUrls, // Firestore에 프로필 이미지 URL 저장
+      });
+    } catch (e) {
+      print("프로필 이미지 URL 저장 오류: $e");
+    }
+  }
+
+  // create post에서 선택한 이미지 목록을 Firebase Storage에 업로드하고 Firestore에 URL 저장
+  Future<List<String>?> uploadPostImages(
+      String postId, List<File> imageFileList) async {
+    try {
+      final List<String> imageUrls = [];
+
       // 각각의 이미지에 대해 반복
       for (int i = 0; i < imageFileList.length; i++) {
         final imageFile = imageFileList[i];
@@ -219,25 +234,43 @@ class FirebaseService {
 
         // 업로드된 이미지의 다운로드 URL 가져오기
         final imageUrl = await storageRef.getDownloadURL();
-
-        // Firestore에 다운로드 URL 저장
-        await updateProfileImageUrl(postId, imageUrl); // postId를 사용하여 저장
+        imageUrls.add(imageUrl); // URL을 리스트에 추가
       }
+
+      // 모든 이미지 업로드가 완료된 후 Firestore에 URL 리스트 저장
+      await updatePostImageUrls(postId, imageUrls);
+
+      return imageUrls;
     } catch (e) {
       print("이미지 업로드 오류: $e");
     }
+    return null;
   }
 
   // Firestore의 posts 컬렉션에 새로운 포스트 추가
   Future<void> createPost(
-      String userId, String caption, List<String> imageUrls) async {
+      String userId, String caption, List<File> imagePaths) async {
     try {
       // 현재 시간을 밀리세컨드로 가져오기
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final postId = '$userId$timestamp';
 
+      // 사용자 정보를 가져오기
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (!userDoc.exists) {
+        throw Exception('사용자를 찾을 수 없습니다.');
+      }
+
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final String name = userData['name'];
+      final String profileImage = userData['profileimage'] ?? '';
+      final imageUrls = await uploadPostImages(postId, imagePaths);
+
       await _firestore.collection('posts').add({
         'postId': postId,
+        'userId': userId, // 사용자 ID 추가
+        'name': name, // 사용자 이름 추가
+        'profileImage': profileImage, // 프로필 이미지 추가
         'caption': caption,
         'imageUrls': imageUrls,
         'createdAt': FieldValue.serverTimestamp(),
