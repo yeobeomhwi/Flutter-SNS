@@ -57,7 +57,7 @@ class HomeScreen extends ConsumerWidget {
                 imageUrls: List<String>.from(data['imageUrls']),
                 createdAt: (data['createdAt'] as Timestamp).toDate(),
                 likes: List<String>.from(data['likes'] ?? []),
-                comments: List<Map<String, String>>.from(data['comments']));
+                comments: List<Map<String, dynamic>>.from(data['comments']));
           }).toList();
 
           // 포스트가 없을 경우 메시지 표시

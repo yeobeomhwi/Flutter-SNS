@@ -1,3 +1,4 @@
+import 'package:app_team2/widgets/comment_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:app_team2/data/models/post.dart';
@@ -37,6 +38,7 @@ class _PostCardState extends State<PostCard> {
       likes = List<String>.from(widget.post.likes);
     });
   }
+
   var uid = FirebaseService().getCurrentUserUid();
 
   @override
@@ -108,7 +110,34 @@ class _PostCardState extends State<PostCard> {
                 ),
               ),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (context) => CommentDialog(
+                      postId: widget.post.postId,
+                      comments: widget.post.comments ?? [],
+                      onAddComment: (String comment) async {
+                        await FirebaseService()
+                            .addComment(widget.post.postId, comment);
+                        if (mounted) {
+                          setState(() {
+                            // 댓글이 추가된 후 상태 업데이트
+                          });
+                        }
+                      },
+                      onDeleteComment: (String commentId) async {
+                        await FirebaseService()
+                            .deleteComment(widget.post.postId, commentId);
+                        if (mounted) {
+                          setState(() {
+                            // 댓글이 삭제된 후 상태 업데이트
+                          });
+                        }
+                      },
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.comment_outlined),
               ),
             ],

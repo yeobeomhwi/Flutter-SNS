@@ -231,66 +231,79 @@ class FirebaseService {
     }
   }
 
-  // create post에서 선택한 이미지 목록을 Firebase Storage에 업로드하고 Firestore에 URL 저장
-  Future<List<String>?> uploadPostImages(
-      String postId, List<File> imageFileList) async {
+  Future<String> uploadSingleImage(File imageFile, String path) async {
     try {
-      final List<String> imageUrls = [];
+      // Storage에 업로드
+      final storageRef = _storage.ref().child(path);
+      final uploadTask = storageRef.putFile(imageFile);
 
-      // 각각의 이미지에 대해 반복
-      for (int i = 0; i < imageFileList.length; i++) {
-        final imageFile = imageFileList[i];
+      // 업로드 진행 상황 모니터링 (선택적)
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        final progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        print('Upload progress: ${progress.toStringAsFixed(2)}%');
+      });
 
-        // Firebase Storage에 이미지 업로드
-        final storageRef = _storage.ref().child('post_images/${postId}_$i.jpg');
-        await storageRef.putFile(imageFile);
-
-        // 업로드된 이미지의 다운로드 URL 가져오기
-        final imageUrl = await storageRef.getDownloadURL();
-        imageUrls.add(imageUrl); // URL을 리스트에 추가
-      }
-
-      // 모든 이미지 업로드가 완료된 후 Firestore에 URL 리스트 저장
-      await updatePostImageUrls(postId, imageUrls);
-
-      return imageUrls;
+      // 업로드 완료 대기 및 URL 반환
+      await uploadTask;
+      return await storageRef.getDownloadURL();
     } catch (e) {
       print("이미지 업로드 오류: $e");
+      rethrow;
     }
-    return null;
+  }
+
+  Future<List<String>> uploadPostImages(
+      String postId, List<File> imageFiles) async {
+    try {
+      // 모든 이미지를 병렬로 업로드
+      final futures = imageFiles.asMap().map((index, file) {
+        final path = 'post_images/${postId}_$index.jpg';
+        return MapEntry(index, uploadSingleImage(file, path));
+      }).values;
+
+      // 모든 업로드 완료 대기
+      final urls = await Future.wait(futures);
+      return urls;
+    } catch (e) {
+      print("이미지 업로드 오류: $e");
+      rethrow;
+    }
   }
 
   // Firestore의 posts 컬렉션에 새로운 포스트 추가
   Future<void> createPost(
       String userId, String caption, List<File> imagePaths) async {
     try {
-      // 현재 시간을 밀리세컨드로 가져오기
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final postId = '$userId$timestamp';
-
-      // 현재 로그인된 사용자 정보를 직접 사용
       final currentUser = FirebaseAuth.instance.currentUser;
+
       if (currentUser == null) {
         throw Exception('로그인된 사용자가 없습니다.');
       }
 
-      final userName = currentUser.displayName ?? 'unknown';
-      final profileImage = currentUser.photoURL ?? '';
+      // 이미지 업로드와 포스트 데이터 준비를 병렬로 처리
+      final imageUploadFuture = uploadPostImages(postId, imagePaths);
 
-      final imageUrls = await uploadPostImages(postId, imagePaths);
-      final List<String> likes = [];
-      final List<Map<String, String>> comments = [];
-
-      await _firestore.collection('posts').doc(postId).set({
+      final postData = {
         'postId': postId,
         'userId': userId,
-        'userName': userName,
-        'profileImage': profileImage,
+        'userName': currentUser.displayName ?? '익명',
+        'profileImage': currentUser.photoURL ?? '',
         'caption': caption,
-        'imageUrls': imageUrls,
         'createdAt': FieldValue.serverTimestamp(),
-        'likes': likes,
-        'comments': comments,
+        'likes': <String>[],
+        'comments': <Map<String, String>>[],
+      };
+
+      // 이미지 업로드 완료 대기
+      final imageUrls = await imageUploadFuture;
+      postData['imageUrls'] = imageUrls;
+
+      // 트랜잭션으로 포스트 생성
+      await _firestore.runTransaction((transaction) async {
+        transaction.set(_firestore.collection('posts').doc(postId), postData);
       });
     } catch (e) {
       print("포스트 생성 중 오류 발생: $e");
@@ -336,6 +349,127 @@ class FirebaseService {
       });
     } catch (e) {
       print("좋아요 토글 중 에러 발생: $e");
+    }
+  }
+
+  Future<void> addComment(String? postId, String comment) async {
+    try {
+      // postId가 null인 경우 함수 종료
+      if (postId == null) {
+        print("postId가 null입니다!");
+        return;
+      }
+
+      // 현재 사용자 정보 가져오기
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        print("로그인된 사용자가 없습니다!");
+        return;
+      }
+
+      // Firestore에서 포스트 문서 가져오기
+      final postDoc = await _firestore.collection('posts').doc(postId).get();
+
+      // 문서가 존재하는지 확인
+      if (!postDoc.exists) {
+        print("문서가 존재하지 않습니다!");
+        return;
+      }
+
+      // 현재 시간을 밀리세컨드로 가져오기 (commentId로 사용)
+      final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+
+      // 기존 comments 배열 가져오기
+      List<Map<String, dynamic>> comments =
+          List<Map<String, dynamic>>.from(postDoc['comments'] ?? []);
+
+      // 새로운 댓글 추가
+      comments.add({
+        'commentId': timestamp,
+        'userId': currentUser.uid,
+        'userName': currentUser.displayName ?? '익명',
+        'comment': comment,
+        'timestamp': timestamp,
+      });
+
+      // Firestore에 업데이트된 댓글 배열 저장
+      await _firestore.collection('posts').doc(postId).update({
+        'comments': comments,
+      });
+    } catch (e) {
+      print("댓글 추가 중 에러 발생: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> deleteComment(String? postId, String? commentId) async {
+    try {
+      // null 체크
+      if (postId == null || commentId == null) {
+        print("postId 또는 commentId가 null입니다!");
+        return;
+      }
+
+      // 현재 사용자 정보 가져오기
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        print("로그인된 사용자가 없습니다!");
+        return;
+      }
+
+      // Firestore에서 포스트 문서 가져오기
+      final postDoc = await _firestore.collection('posts').doc(postId).get();
+
+      // 문서가 존재하는지 확인
+      if (!postDoc.exists) {
+        print("문서가 존재하지 않습니다!");
+        return;
+      }
+
+      // 기존 comments 배열 가져오기
+      List<Map<String, dynamic>> comments =
+          List<Map<String, dynamic>>.from(postDoc['comments'] ?? []);
+
+      // 삭제하려는 댓글 찾기
+      final commentIndex = comments.indexWhere((comment) =>
+              comment['commentId'] == commentId &&
+              comment['userId'] == currentUser.uid // 자신의 댓글만 삭제 가능
+          );
+
+      // 댓글이 존재하고 현재 사용자의 댓글인 경우에만 삭제
+      if (commentIndex != -1) {
+        comments.removeAt(commentIndex);
+
+        // Firestore 업데이트
+        await _firestore.collection('posts').doc(postId).update({
+          'comments': comments,
+        });
+      } else {
+        print("삭제할 댓글을 찾을 수 없거나 권한이 없습니다.");
+      }
+    } catch (e) {
+      print("댓글 삭제 중 에러 발생: $e");
+      rethrow;
+    }
+  }
+
+// 댓글 시간 포맷팅을 위한 유틸리티 메서드
+  String formatCommentTime(String timestamp) {
+    final commentTime =
+        DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp));
+    final now = DateTime.now();
+    final difference = now.difference(commentTime);
+
+    if (difference.inMinutes < 1) {
+      return '방금 전';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}분 전';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}시간 전';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}일 전';
+    } else {
+      return '${commentTime.year}.${commentTime.month}.${commentTime.day}';
     }
   }
 }
