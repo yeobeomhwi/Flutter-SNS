@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../services/firebase_service.dart';
 
-
 class CreateCaptionScreen extends ConsumerStatefulWidget {
   const CreateCaptionScreen({super.key});
 
@@ -44,7 +43,6 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
         appBar: AppBar(
           title: const Text('새 게시물'),
         ),
-        // resizeToAvoidBottomInset: false,
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: SingleChildScrollView(
