@@ -1,14 +1,10 @@
-import 'package:app_team2/data/models/post.dart';
 import 'package:app_team2/widgets/post_card.dart';
 import 'package:app_team2/providers/post_provider.dart'; // 추가
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeScreen extends ConsumerWidget {
-  HomeScreen({super.key});
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

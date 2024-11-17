@@ -1,34 +1,24 @@
+import 'package:app_team2/providers/post_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CommentDialog extends StatefulWidget {
+class CommentDialog extends ConsumerStatefulWidget {
   final String postId;
-  final List<Map<String, dynamic>> comments;
-  final Function(String) onAddComment;
-  final Function(String) onDeleteComment;
 
   const CommentDialog({
     super.key,
     required this.postId,
-    required this.comments,
-    required this.onAddComment,
-    required this.onDeleteComment,
   });
 
   @override
-  State<CommentDialog> createState() => _CommentDialogState();
+  ConsumerState<CommentDialog> createState() => _CommentDialogState();
 }
 
-class _CommentDialogState extends State<CommentDialog> {
+class _CommentDialogState extends ConsumerState<CommentDialog> {
   final TextEditingController _commentController = TextEditingController();
   final currentUser = FirebaseAuth.instance.currentUser;
-  List<Map<String, dynamic>> comments = [];
-
-  @override
-  void initState() {
-    super.initState();
-    comments = List.from(widget.comments);
-  }
 
   @override
   void dispose() {
@@ -38,6 +28,12 @@ class _CommentDialogState extends State<CommentDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // postProvider를 구독하고 해당 postId의 comments를 가져옴
+    final postState = ref.watch(postProvider);
+    final post =
+        postState.posts.firstWhere((post) => post.postId == widget.postId);
+    final comments = post.comments;
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
       padding: const EdgeInsets.all(16.0),
@@ -56,9 +52,9 @@ class _CommentDialogState extends State<CommentDialog> {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: widget.comments.length,
+              itemCount: comments.length,
               itemBuilder: (context, index) {
-                final comment = widget.comments[index];
+                final comment = comments[index];
                 return ListTile(
                   leading: const CircleAvatar(
                     child: Icon(Icons.person),
@@ -69,7 +65,9 @@ class _CommentDialogState extends State<CommentDialog> {
                     children: [
                       Text(comment['comment']),
                       Text(
-                        formatCommentTime(comment['timestamp']),
+                        comment['timestamp'] != null
+                            ? formatCommentTime(comment['timestamp'])
+                            : '',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -81,9 +79,11 @@ class _CommentDialogState extends State<CommentDialog> {
                       ? IconButton(
                           icon: const Icon(Icons.delete),
                           onPressed: () {
-                            widget.onDeleteComment(comment['commentId']);
-                          },
-                        )
+                            ref.read(postProvider.notifier).deleteComment(
+                                  postId: post.postId,
+                                  commentId: comment['commentId'],
+                                );
+                          })
                       : null,
                 );
               },
@@ -108,7 +108,12 @@ class _CommentDialogState extends State<CommentDialog> {
                   icon: const Icon(Icons.send),
                   onPressed: () {
                     if (_commentController.text.isNotEmpty) {
-                      widget.onAddComment(_commentController.text);
+                      // PostNotifier의 addComment 메서드 호출
+                      ref.read(postProvider.notifier).addComment(
+                          postId: post.postId,
+                          userId: currentUser?.uid ?? 'anonymous',
+                          userName: currentUser?.displayName ?? '익명',
+                          comment: _commentController.text);
                       _commentController.clear();
                     }
                   },
@@ -121,9 +126,8 @@ class _CommentDialogState extends State<CommentDialog> {
     );
   }
 
-  String formatCommentTime(String timestamp) {
-    final commentTime =
-        DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp));
+  String formatCommentTime(Timestamp timestamp) {
+    final commentTime = timestamp.toDate();
     final now = DateTime.now();
     final difference = now.difference(commentTime);
 

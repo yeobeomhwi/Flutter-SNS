@@ -14,10 +14,10 @@ class PostCard extends StatefulWidget {
   });
 
   @override
-  State<PostCard> createState() => PostCardState();
+  State<PostCard> createState() => _PostCardState();
 }
 
-class PostCardState extends State<PostCard> {
+class _PostCardState extends State<PostCard> {
   final PageController _controller = PageController();
   List<String> likes = [];
 
@@ -25,7 +25,6 @@ class PostCardState extends State<PostCard> {
   void initState() {
     super.initState();
     likes = List<String>.from(widget.post.likes); // 초기 likes 설정
-    print(likes);
   }
 
   // Firestore에서 포스트의 좋아요 상태를 토글하는 함수
@@ -116,25 +115,6 @@ class PostCardState extends State<PostCard> {
                     isScrollControlled: true,
                     builder: (context) => CommentDialog(
                       postId: widget.post.postId,
-                      comments: widget.post.comments ?? [],
-                      onAddComment: (String comment) async {
-                        await FirebaseService()
-                            .addComment(widget.post.postId, comment);
-                        if (mounted) {
-                          setState(() {
-                            // 댓글이 추가된 후 상태 업데이트
-                          });
-                        }
-                      },
-                      onDeleteComment: (String commentId) async {
-                        await FirebaseService()
-                            .deleteComment(widget.post.postId, commentId);
-                        if (mounted) {
-                          setState(() {
-                            // 댓글이 삭제된 후 상태 업데이트
-                          });
-                        }
-                      },
                     ),
                   );
                 },

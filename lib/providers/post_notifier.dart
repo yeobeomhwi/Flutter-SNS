@@ -9,12 +9,12 @@ class PostNotifier extends StateNotifier<PostState> {
   final FirebaseFirestore _firestore;
 
   PostNotifier(this._firestore) : super(PostState(posts: [])) {
-    _fetchPosts();
+    _subscribeToPostsCollection();
   }
 
   StreamSubscription<QuerySnapshot>? _subscription;
 
-  void _fetchPosts() {
+  void _subscribeToPostsCollection() {
     state = state.copyWith(isLoading: true);
 
     _subscription = _firestore
@@ -109,16 +109,43 @@ class PostNotifier extends StateNotifier<PostState> {
     required String comment,
   }) async {
     try {
+      final now = DateTime.now();
       final commentData = {
+        'commentId': now.millisecondsSinceEpoch.toString(), // 고유 ID 추가
         'userId': userId,
         'userName': userName,
         'comment': comment,
-        'createdAt': FieldValue.serverTimestamp(),
+        'createdAt': Timestamp.fromDate(
+            now), // serverTimestamp() 대신 현재 시간을 Timestamp로 변환
       };
 
       await _firestore.collection('posts').doc(postId).update({
         'comments': FieldValue.arrayUnion([commentData])
       });
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> deleteComment({
+    required String postId,
+    required String commentId,
+  }) async {
+    try {
+      // 먼저 현재 게시물의 댓글 목록을 가져옵니다
+      final docSnapshot =
+          await _firestore.collection('posts').doc(postId).get();
+      final comments = List<Map<String, dynamic>>.from(
+          docSnapshot.data()?['comments'] ?? []);
+
+      // commentId와 일치하는 댓글을 찾아서 제거
+      comments.removeWhere((comment) => comment['commentId'] == commentId);
+
+      // 업데이트된 댓글 목록을 저장
+      await _firestore
+          .collection('posts')
+          .doc(postId)
+          .update({'comments': comments});
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
