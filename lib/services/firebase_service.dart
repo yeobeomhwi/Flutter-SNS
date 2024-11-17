@@ -271,7 +271,7 @@ class FirebaseService {
     }
   }
 
-  // Firestore의 posts 컬렉션에 새로운 포스트 추가
+  // 새로운 포스트 추가
   Future<void> createPost(
       String userId, String caption, List<File> imagePaths) async {
     try {
@@ -349,127 +349,6 @@ class FirebaseService {
       });
     } catch (e) {
       print("좋아요 토글 중 에러 발생: $e");
-    }
-  }
-
-  Future<void> addComment(String? postId, String comment) async {
-    try {
-      // postId가 null인 경우 함수 종료
-      if (postId == null) {
-        print("postId가 null입니다!");
-        return;
-      }
-
-      // 현재 사용자 정보 가져오기
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        print("로그인된 사용자가 없습니다!");
-        return;
-      }
-
-      // Firestore에서 포스트 문서 가져오기
-      final postDoc = await _firestore.collection('posts').doc(postId).get();
-
-      // 문서가 존재하는지 확인
-      if (!postDoc.exists) {
-        print("문서가 존재하지 않습니다!");
-        return;
-      }
-
-      // 현재 시간을 밀리세컨드로 가져오기 (commentId로 사용)
-      final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-
-      // 기존 comments 배열 가져오기
-      List<Map<String, dynamic>> comments =
-          List<Map<String, dynamic>>.from(postDoc['comments'] ?? []);
-
-      // 새로운 댓글 추가
-      comments.add({
-        'commentId': timestamp,
-        'userId': currentUser.uid,
-        'userName': currentUser.displayName ?? '익명',
-        'comment': comment,
-        'timestamp': timestamp,
-      });
-
-      // Firestore에 업데이트된 댓글 배열 저장
-      await _firestore.collection('posts').doc(postId).update({
-        'comments': comments,
-      });
-    } catch (e) {
-      print("댓글 추가 중 에러 발생: $e");
-      rethrow;
-    }
-  }
-
-  Future<void> deleteComment(String? postId, String? commentId) async {
-    try {
-      // null 체크
-      if (postId == null || commentId == null) {
-        print("postId 또는 commentId가 null입니다!");
-        return;
-      }
-
-      // 현재 사용자 정보 가져오기
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        print("로그인된 사용자가 없습니다!");
-        return;
-      }
-
-      // Firestore에서 포스트 문서 가져오기
-      final postDoc = await _firestore.collection('posts').doc(postId).get();
-
-      // 문서가 존재하는지 확인
-      if (!postDoc.exists) {
-        print("문서가 존재하지 않습니다!");
-        return;
-      }
-
-      // 기존 comments 배열 가져오기
-      List<Map<String, dynamic>> comments =
-          List<Map<String, dynamic>>.from(postDoc['comments'] ?? []);
-
-      // 삭제하려는 댓글 찾기
-      final commentIndex = comments.indexWhere((comment) =>
-              comment['commentId'] == commentId &&
-              comment['userId'] == currentUser.uid // 자신의 댓글만 삭제 가능
-          );
-
-      // 댓글이 존재하고 현재 사용자의 댓글인 경우에만 삭제
-      if (commentIndex != -1) {
-        comments.removeAt(commentIndex);
-
-        // Firestore 업데이트
-        await _firestore.collection('posts').doc(postId).update({
-          'comments': comments,
-        });
-      } else {
-        print("삭제할 댓글을 찾을 수 없거나 권한이 없습니다.");
-      }
-    } catch (e) {
-      print("댓글 삭제 중 에러 발생: $e");
-      rethrow;
-    }
-  }
-
-// 댓글 시간 포맷팅을 위한 유틸리티 메서드
-  String formatCommentTime(String timestamp) {
-    final commentTime =
-        DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp));
-    final now = DateTime.now();
-    final difference = now.difference(commentTime);
-
-    if (difference.inMinutes < 1) {
-      return '방금 전';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}분 전';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours}시간 전';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}일 전';
-    } else {
-      return '${commentTime.year}.${commentTime.month}.${commentTime.day}';
     }
   }
 }
