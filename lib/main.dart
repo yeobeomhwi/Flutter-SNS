@@ -21,26 +21,22 @@ class MyApp extends StatelessWidget {
     return ScreenUtilInit(
       designSize: const Size(375, 812),
       child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
         routerConfig: CustomRouter.router,
         title: 'Flutter Demo',
         theme: ThemeData.light().copyWith(
-          scaffoldBackgroundColor: Colors.white,
-          appBarTheme: AppBarTheme(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black
-          ),
-          primaryColor: Colors.white,
-          bottomNavigationBarTheme: BottomNavigationBarThemeData(
-            backgroundColor: Colors.white,
+            scaffoldBackgroundColor: Colors.white,
+            appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.white, foregroundColor: Colors.black),
+            primaryColor: Colors.white,
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: Colors.white,
               selectedItemColor: Colors.black,
-          )
-        ), // 기본 라이트모드 테마
+            )), // 기본 라이트모드 테마
         darkTheme: ThemeData.dark().copyWith(
-            bottomNavigationBarTheme: BottomNavigationBarThemeData(
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.grey
-            )
-        ), // 기본 다크모드 테마
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+                selectedItemColor: Colors.white,
+                unselectedItemColor: Colors.grey)), // 기본 다크모드 테마
         themeMode: ThemeMode.system, // 시스템 설정에 따라 자동 전환
       ),
     );
