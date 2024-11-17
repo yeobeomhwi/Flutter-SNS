@@ -1,6 +1,6 @@
 import 'package:app_team2/data/models/post.dart';
-import 'package:app_team2/services/firebase_service.dart';
 import 'package:app_team2/widgets/post_card.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

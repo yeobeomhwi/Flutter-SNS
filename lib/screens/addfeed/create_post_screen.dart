@@ -36,7 +36,14 @@ class CreatePostScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () {
-              context.push('/CreateCaption');
+              if (pickedImages.isNotEmpty) {
+                context.push('/CreateCaption');
+              } else {
+                // 이미지가 선택되지 않았을 때 경고 메시지 표시
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('이미지를 선택해주세요.')),
+                );
+              }
             },
             child: const Text('다음'),
           ),
