@@ -6,8 +6,8 @@ class Post {
   final List<String> imageUrls;
   final String caption;
   final DateTime createdAt;
-  final List<String> likes; // userId들을 받을 계획
-  final List<Map<String, String>> comments;
+  final List<String> likes;
+  final List<Map<String, dynamic>> comments;
 
   const Post({
     required this.postId,
@@ -30,7 +30,7 @@ class Post {
     String? caption,
     DateTime? createdAt,
     List<String>? likes,
-    List<Map<String, String>>? comments,
+    List<Map<String, dynamic>>? comments,
   }) {
     return Post(
       postId: postId ?? this.postId,

@@ -1,10 +1,12 @@
+import 'package:app_team2/widgets/comment_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:app_team2/data/models/post.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/firebase_service.dart';
+import '../providers/post_provider.dart';
 
-class PostCard extends StatefulWidget {
+class PostCard extends ConsumerStatefulWidget {
   final Post post;
 
   const PostCard({
@@ -13,31 +15,121 @@ class PostCard extends StatefulWidget {
   });
 
   @override
-  State<PostCard> createState() => _PostCardState();
+  ConsumerState<PostCard> createState() => _PostCardState();
 }
 
-class _PostCardState extends State<PostCard> {
+class _PostCardState extends ConsumerState<PostCard> {
   final PageController _controller = PageController();
   List<String> likes = [];
+  final currentUserUid = FirebaseService().getCurrentUserUid();
 
   @override
   void initState() {
     super.initState();
-    likes = List<String>.from(widget.post.likes); // 초기 likes 설정
-    print(likes);
+    likes = List<String>.from(widget.post.likes);
   }
 
-  // Firestore에서 포스트의 좋아요 상태를 토글하는 함수
   Future<void> toggleLike(String postId) async {
-    // Call the toggleLikePost method from FirebaseService
     await FirebaseService().toggleLikePost(postId);
-
-    // Optionally, you can update the local state to reflect the changes (if needed)
     setState(() {
       likes = List<String>.from(widget.post.likes);
     });
   }
-  var uid = FirebaseService().getCurrentUserUid();
+
+  // 게시물 삭제 함수
+  Future<void> _deletePost() async {
+    try {
+      // 삭제 확인 다이얼로그 표시
+      final bool? shouldDelete = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('게시물 삭제'),
+          content: const Text('이 게시물을 삭제하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text(
+                '삭제',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldDelete == true) {
+        // PostNotifier를 통해 게시물 삭제
+        await ref.read(postProvider.notifier).deletePost(widget.post.postId);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('게시물이 삭제되었습니다.')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('게시물 삭제 중 오류가 발생했습니다.')),
+        );
+      }
+    }
+  }
+
+  void _showPostOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.post.userId == currentUserUid) ...[
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text(
+                  '게시물 삭제',
+                  style: TextStyle(color: Colors.red),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deletePost();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text('게시물 수정'),
+                onTap: () {
+                  // TODO: 게시물 수정 기능 구현
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('공유하기'),
+              onTap: () {
+                // TODO: 공유하기 기능 구현
+                Navigator.pop(context);
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('취소'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +149,7 @@ class _PostCardState extends State<PostCard> {
               Text(widget.post.userName),
               const Spacer(),
               IconButton(
-                onPressed: () {},
+                onPressed: _showPostOptions,
                 icon: const Icon(Icons.more_vert),
               ),
             ],
@@ -74,6 +166,26 @@ class _PostCardState extends State<PostCard> {
                 width: double.infinity,
                 height: 300,
                 fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(
+                    child: Icon(
+                      Icons.error_outline,
+                      size: 40,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -99,17 +211,36 @@ class _PostCardState extends State<PostCard> {
             children: [
               IconButton(
                 onPressed: () {
-                  // Firestore에서 좋아요 상태를 토글
                   toggleLike(widget.post.postId);
                 },
                 icon: Icon(
                   Icons.favorite,
-                  color: likes.contains(uid) ? Colors.red : null,
+                  color: likes.contains(currentUserUid) ? Colors.red : null,
                 ),
               ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.comment_outlined),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (context) => CommentDialog(
+                          postId: widget.post.postId,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.comment_outlined),
+                  ),
+                  Text(
+                    widget.post.comments.length.toString(),
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ),
             ],
           ),

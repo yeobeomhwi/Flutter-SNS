@@ -1,12 +1,10 @@
 import 'dart:io';
-
 import 'package:app_team2/providers/picked_images_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../services/firebase_service.dart';
-
 
 class CreateCaptionScreen extends ConsumerStatefulWidget {
   const CreateCaptionScreen({super.key});
@@ -18,13 +16,12 @@ class CreateCaptionScreen extends ConsumerStatefulWidget {
 
 class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   final TextEditingController _captionController = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
   final FirebaseService firebaseService = FirebaseService();
+  bool _isLoading = false; // 로딩 상태 변수 추가
 
   @override
   void dispose() {
     _captionController.dispose();
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -33,8 +30,6 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
     final pickedImages = ref.watch(pickedImagesProvider);
     final List<File> imagePaths =
         pickedImages.map((xFile) => File(xFile.path)).toList();
-    final reversedImages = pickedImages.reversed.toList();
-    final userId = firebaseService.getCurrentUserUid();
 
     return GestureDetector(
       onTap: () {
@@ -44,7 +39,6 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
         appBar: AppBar(
           title: const Text('새 게시물'),
         ),
-        // resizeToAvoidBottomInset: false,
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: SingleChildScrollView(
@@ -65,60 +59,6 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                         ),
                 ),
                 const SizedBox(height: 20),
-                if (reversedImages.isNotEmpty)
-                  SizedBox(
-                    height: 80,
-                    child: PageView.builder(
-                      padEnds: false,
-                      controller: PageController(
-                        viewportFraction: 0.22,
-                      ),
-                      itemCount: reversedImages.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: Stack(
-                            children: [
-                              Container(
-                                width: 100,
-                                height: 100,
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.grey,
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.file(
-                                    File(reversedImages[index].path),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                top: 5,
-                                right: 5,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    ref
-                                        .read(pickedImagesProvider.notifier)
-                                        .removeImage(reversedImages[index]);
-                                  },
-                                  child: const Icon(
-                                    Icons.cancel_rounded,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                const SizedBox(height: 20),
                 TextField(
                   controller: _captionController,
                   decoration: InputDecoration(
@@ -133,45 +73,59 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      // 포스트 생성
-                      await firebaseService.createPost(
-                        userId!,
-                        _captionController.text,
-                        imagePaths,
-                      );
+                  onPressed: _isLoading
+                      ? null
+                      : () async {
+                          // 로딩 중일 때 버튼 비활성화
+                          setState(() {
+                            _isLoading = true; // 로딩 시작
+                          });
 
-                      // 성공 메시지 표시
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('포스트가 성공적으로 작성되었습니다.'),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
+                          final userId = firebaseService.getCurrentUserUid();
+                          try {
+                            // 포스트 생성
+                            await firebaseService.createPost(
+                              userId!,
+                              _captionController.text,
+                              imagePaths,
+                            );
 
-                      // 초기화 및 화면 이동
-                      await Future.delayed(
-                          const Duration(milliseconds: 500)); // 0.5초 딜레이
-                      ref
-                          .read(pickedImagesProvider.notifier)
-                          .clearImages(); // 이미지 초기화
-                      _captionController.clear(); // 텍스트 필드 비우기
+                            // 성공 메시지 표시
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('포스트가 성공적으로 작성되었습니다.'),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
 
-                      // 메인 화면으로 이동
-                      context.go('/Main');
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('오류가 발생했습니다.: $e')),
-                      );
-                    }
-                  },
+                            // 초기화 및 화면 이동
+                            ref
+                                .read(pickedImagesProvider.notifier)
+                                .clearImages(); // 이미지 초기화
+                            _captionController.clear(); // 텍스트 필드 비우기
+
+                            // 메인 화면으로 이동
+                            context.go('/Main');
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('오류가 발생했습니다.: $e')),
+                            );
+                          } finally {
+                            setState(() {
+                              _isLoading = false; // 로딩 종료
+                            });
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigo,
                     foregroundColor: Colors.white,
                   ),
                   child: const Text('Post'),
                 ),
+                if (_isLoading) // 로딩 중이면 인디케이터 표시
+                  const Center(
+                    child: CircularProgressIndicator(),
+                  ),
               ],
             ),
           ),
