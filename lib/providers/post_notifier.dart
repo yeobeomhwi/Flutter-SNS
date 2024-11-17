@@ -9,12 +9,12 @@ class PostNotifier extends StateNotifier<PostState> {
   final FirebaseFirestore _firestore;
 
   PostNotifier(this._firestore) : super(PostState(posts: [])) {
-    _subscribeToPostsCollection();
+    _fetchPosts();
   }
 
   StreamSubscription<QuerySnapshot>? _subscription;
 
-  void _subscribeToPostsCollection() {
+  void _fetchPosts() {
     state = state.copyWith(isLoading: true);
 
     _subscription = _firestore
