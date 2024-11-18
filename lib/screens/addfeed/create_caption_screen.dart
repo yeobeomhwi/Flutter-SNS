@@ -1,13 +1,9 @@
 import 'dart:io';
-import 'package:app_team2/data/repositories/post_repository.dart';
 import 'package:app_team2/providers/picked_images_provider.dart';
+import 'package:app_team2/providers/post_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
-
-import '../../data/models/post.dart';
-import '../../services/firebase_service.dart';
 
 class CreateCaptionScreen extends ConsumerStatefulWidget {
   const CreateCaptionScreen({super.key});
@@ -19,7 +15,6 @@ class CreateCaptionScreen extends ConsumerStatefulWidget {
 
 class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   final TextEditingController _captionController = TextEditingController();
-  final FirebaseService firebaseService = FirebaseService();
   bool _isLoading = false; // 로딩 상태 변수 추가
 
   @override
@@ -85,35 +80,20 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                           });
 
                           try {
-                            // UUID 생성하여 고유 ID 생성
-                            final String postId = const Uuid().v4();
-
                             // SharedPreferences에서 현재 로그인한 사용자 정보를 가져오는 로직 필요
-                            const String userId =
-                                'local_user_id'; // shared_preferences로 사용자 정보 관리 구현 후 대체
-                            const String userName =
-                                'local_user_name'; // shared_preferences로 사용자 정보 관리 구현 후 대체
+                            const String userId = 'local_user_id';
+                            const String userName = 'local_user_name';
                             const String profileImage =
-                                'default_profile_image_path'; // shared_preferences로 사용자 정보 관리 구현 후 대체
+                                'https://via.placeholder.com/150';
 
-                            // Post 객체 생성
-                            final post = Post(
-                              postId: postId,
-                              userId: userId,
-                              userName: userName,
-                              profileImage: profileImage,
-                              imagePaths: imagePaths, // 선택된 이미지들의 로컬 경로
-                              caption: _captionController.text,
-                              createdAt: DateTime.now(),
-                              likes: [],
-                              comments: [],
-                            );
-
-                            // PostRepository 인스턴스 생성
-                            final postRepository = PostRepository();
-
-                            // 포스트 저장
-                            await postRepository.savePost(post);
+                            // PostNotifier를 사용하여 포스트 추가
+                            await ref.read(postProvider.notifier).addPost(
+                                  userId: userId,
+                                  userName: userName,
+                                  profileImage: profileImage,
+                                  imagePaths: imagePaths,
+                                  caption: _captionController.text,
+                                );
 
                             // 성공 메시지 표시
                             if (mounted) {

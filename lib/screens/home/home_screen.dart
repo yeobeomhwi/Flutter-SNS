@@ -8,8 +8,8 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // postProvider에서 상태를 가져옵니다.
     final postState = ref.watch(postProvider);
+    print('Current posts in state: ${postState.posts.length}');
 
     return Scaffold(
       appBar: AppBar(

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:app_team2/data/models/post.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';

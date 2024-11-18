@@ -1,19 +1,19 @@
 import 'package:app_team2/data/models/post.dart';
+import 'package:app_team2/data/repositories/post_repository.dart';
 import 'package:app_team2/providers/post_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:app_team2/data/database/post_database.dart';
 
 class PostNotifier extends StateNotifier<PostState> {
-  final PostDatabase _database;
+  final PostRepository _postRepository;
 
-  PostNotifier(this._database) : super(PostState(posts: [])) {
+  PostNotifier(this._postRepository) : super(PostState(posts: [])) {
     _loadPosts();
   }
 
   Future<void> _loadPosts() async {
     try {
       state = state.copyWith(isLoading: true);
-      final posts = await _database.readAllPosts();
+      final posts = await _postRepository.getAllPosts();
       state = state.copyWith(posts: posts, isLoading: false);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
@@ -40,7 +40,7 @@ class PostNotifier extends StateNotifier<PostState> {
         comments: [],
       );
 
-      await _database.createPost(newPost);
+      await _postRepository.savePost(newPost);
       await _loadPosts(); // 포스트 목록 새로고침
     } catch (e) {
       state = state.copyWith(error: e.toString());
@@ -49,8 +49,8 @@ class PostNotifier extends StateNotifier<PostState> {
 
   Future<void> deletePost(String postId) async {
     try {
-      await _database.deletePost(postId);
-      await _loadPosts(); // 포스트 목록 새로고침
+      await _postRepository.deletePost(postId);
+      await _loadPosts();
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -58,7 +58,7 @@ class PostNotifier extends StateNotifier<PostState> {
 
   Future<void> likePost(String postId, String userId) async {
     try {
-      final post = await _database.readPost(postId);
+      final post = await _postRepository.getPostById(postId);
       if (post == null) return;
 
       List<String> updatedLikes = List.from(post.likes);
@@ -69,8 +69,8 @@ class PostNotifier extends StateNotifier<PostState> {
       }
 
       final updatedPost = post.copyWith(likes: updatedLikes);
-      await _database.updatePost(updatedPost);
-      await _loadPosts(); // 포스트 목록 새로고침
+      await _postRepository.updatePost(updatedPost);
+      await _loadPosts();
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -83,7 +83,7 @@ class PostNotifier extends StateNotifier<PostState> {
     required String comment,
   }) async {
     try {
-      final post = await _database.readPost(postId);
+      final post = await _postRepository.getPostById(postId);
       if (post == null) return;
 
       final commentData = {
@@ -98,8 +98,8 @@ class PostNotifier extends StateNotifier<PostState> {
       updatedComments.add(commentData);
 
       final updatedPost = post.copyWith(comments: updatedComments);
-      await _database.updatePost(updatedPost);
-      await _loadPosts(); // 포스트 목록 새로고침
+      await _postRepository.updatePost(updatedPost);
+      await _loadPosts();
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -110,7 +110,7 @@ class PostNotifier extends StateNotifier<PostState> {
     required String commentId,
   }) async {
     try {
-      final post = await _database.readPost(postId);
+      final post = await _postRepository.getPostById(postId);
       if (post == null) return;
 
       List<Map<String, dynamic>> updatedComments = List.from(post.comments);
@@ -118,8 +118,8 @@ class PostNotifier extends StateNotifier<PostState> {
           .removeWhere((comment) => comment['commentId'] == commentId);
 
       final updatedPost = post.copyWith(comments: updatedComments);
-      await _database.updatePost(updatedPost);
-      await _loadPosts(); // 포스트 목록 새로고침
+      await _postRepository.updatePost(updatedPost);
+      await _loadPosts();
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
