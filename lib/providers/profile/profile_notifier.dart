@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../services/firebase_service.dart';
 import '../../data/local/user_database_helper.dart';
 import '../../data/models/usermodel.dart';
@@ -11,22 +12,19 @@ import '../../data/models/usermodel.dart';
 class ProfileNotifier extends StateNotifier<ProfileState> {
   ProfileNotifier() : super(ProfileState(isLoading: true));
 
-  Future<void> loadUserData() async {
+  // 인터넷 연결이 있을 때 사용자 데이터 로드
+  Future<void> loadUserDataOnline(String? uid) async {
     try {
-      state = ProfileState(isLoading: true);
-
-      print('1');
       final firebaseUser = FirebaseService().getCurrentUser();
       if (firebaseUser == null) {
         state = ProfileState(error: '로그인된 사용자가 없습니다.');
         return;
       }
-      print('2');
+
       final dbHelper = DatabaseHelper();
       String localPhotoURL = '이미지 없음';
 
       if (firebaseUser.photoURL != null) {
-        print('3');
         final imageUrl = firebaseUser.photoURL!;
         final response = await http.get(Uri.parse(imageUrl));
 
@@ -43,7 +41,6 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         }
       }
 
-      print('4');
       final newUser = UserModel(
         uid: firebaseUser.uid,
         displayName: firebaseUser.displayName ?? '이름 없음',
@@ -51,13 +48,26 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         photoURL: localPhotoURL,
       );
 
-      print('5');
       await dbHelper.insertUser(newUser);
-
-      print('6');
       state = ProfileState(user: newUser);
     } catch (e) {
       state = ProfileState(error: '데이터 로드 실패: $e');
+      print('에러: $e');
+    }
+  }
+
+  // 인터넷 연결이 없을 때 로컬 데이터 로드
+  Future<void> loadUserDataOffline(String? uid) async {
+    try {
+      final dbHelper = DatabaseHelper();
+      final user = await dbHelper.getUser(uid!);
+      if (user != null) {
+        state = ProfileState(user: user);
+      } else {
+        state = ProfileState(error: '로컬 사용자 데이터가 없습니다.');
+      }
+    } catch (e) {
+      state = ProfileState(error: '로컬 데이터 로드 실패: $e');
       print('에러: $e');
     }
   }
@@ -87,19 +97,32 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 
   Future<void> updateProfilePicture(String userId, File imageFile) async {
     try {
+      // 로딩 상태로 변경
+      state = ProfileState(isLoading: true, user: state.user); // 로딩 시작
+
+      // Firebase에 이미지 업로드
       await FirebaseService().uploadProfileImage(userId, imageFile);
 
-      // 캐시 비우기
+      // 캐시 비우기 (이미지가 변경되었을 때 UI에서 반영하도록)
       final imageProvider = FileImage(imageFile);
       await imageProvider.evict();
 
+      // 로컬 저장소에 이미지 파일 저장
       await saveImageLocally(imageFile);
 
+      // 프로필 정보를 로컬 DB에 업데이트
+      final updatedUser = state.user?.copyWith(photoURL: imageFile.path);
+      if (updatedUser != null) {
+        final dbHelper = DatabaseHelper();
+        await dbHelper.updateUser(updatedUser);
 
-      // UI와 로컬 데이터 갱신
-      await loadUserData();
+        // 상태 갱신하여 UI 반영
+        state = ProfileState(user: updatedUser); // 로딩 끝, 프로필 업데이트
+      }
     } catch (e) {
-      state = ProfileState(error: '프로필 사진 업데이트 실패: $e');
+      // 에러 발생 시 상태 업데이트
+      state = ProfileState(isLoading: false, error: '프로필 사진 업데이트 실패: $e');
+      print('에러: $e');
     }
   }
 
