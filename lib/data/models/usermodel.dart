@@ -6,15 +6,15 @@ class UserModel {
   final String uid;
   final String displayName;
   final String email;
-  final List<String> followers;
-  final List<String> following;
+  final List<String>? followers;
+  final List<String>? following;
   final String photoURL;
   UserModel({
     required this.uid,
     required this.displayName,
     required this.email,
-    required this.followers,
-    required this.following,
+    this.followers,
+    this.following,
     required this.photoURL,
   });
 
@@ -54,8 +54,8 @@ class UserModel {
       uid: map['uid'] ?? '',
       displayName: map['displayName'] ?? '',
       email: map['email'] ?? '',
-      followers: List<String>.from(map['followers']),
-      following: List<String>.from(map['following']),
+      followers: map['followers'] != null ? List<String>.from(map['followers']) : null,
+      following: map['following'] != null ? List<String>.from(map['following']) : null,
       photoURL: map['photoURL'] ?? '',
     );
   }

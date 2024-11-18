@@ -54,6 +54,10 @@ dependencies:
   smooth_page_indicator: ^1.2.0+3
   flutter_screenutil: ^5.9.3
   fpdart: ^1.1.1
+  path_provider: ^2.1.5
+  http: ^1.2.2
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

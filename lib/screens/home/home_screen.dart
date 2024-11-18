@@ -1,7 +1,8 @@
 import 'package:app_team2/widgets/post_card.dart';
-import 'package:app_team2/providers/post_provider.dart'; // 추가
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/post/post_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
