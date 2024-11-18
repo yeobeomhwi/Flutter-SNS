@@ -55,9 +55,11 @@ class _TopNetworkBarState extends State<TopNetworkBar> {
         child: Container(
           color: Colors.red,
           padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-          child: Text(
-            widget.message,
-            style: TextStyle(color: Colors.white, fontSize: 16),
+          child: Center(
+            child: Text(
+              widget.message,
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
           ),
         ),
       ),

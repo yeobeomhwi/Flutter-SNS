@@ -88,7 +88,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       }
 
       // 상태를 갱신하여 UI에 반영
-      state = ProfileState(user: updatedUser);  // 상태 업데이트
+      state = ProfileState(user: updatedUser); // 상태 업데이트
       print(state.user);
     } catch (e) {
       state = ProfileState(error: '이미지 저장 실패: $e');
@@ -125,6 +125,4 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       print('에러: $e');
     }
   }
-
-
 }
