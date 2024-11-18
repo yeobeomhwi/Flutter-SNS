@@ -1,6 +1,7 @@
 import 'package:app_team2/data/models/post.dart';
 import 'package:app_team2/data/repositories/post_repository.dart';
-import 'package:app_team2/providers/post_state.dart';
+import 'package:app_team2/providers/post/post_state.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class PostNotifier extends StateNotifier<PostState> {

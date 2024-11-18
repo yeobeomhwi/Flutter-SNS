@@ -51,6 +51,10 @@ dependencies:
   smooth_page_indicator: ^1.2.0+3
   flutter_screenutil: ^5.9.3
   fpdart: ^1.1.1
+  path_provider: ^2.1.5
+  http: ^1.2.2
+  top_snackbar_flutter: ^3.1.0
+  toastification: ^2.3.0
   path: ^1.9.0
 
 dev_dependencies:

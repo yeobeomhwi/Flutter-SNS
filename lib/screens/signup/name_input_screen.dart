@@ -1,5 +1,5 @@
 import 'package:app_team2/data/models/usermodel.dart';
-import 'package:app_team2/providers/signup_providers.dart';
+import 'package:app_team2/providers/signup/signup_providers.dart';
 import 'package:app_team2/services/firebase_service.dart';
 import 'package:app_team2/utils/extensions/email_vaildator.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +14,8 @@ class NameInputScreen extends ConsumerStatefulWidget {
   const NameInputScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _NameInputScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _NameInputScreenState();
 }
 
 class _NameInputScreenState extends ConsumerState<NameInputScreen> {
@@ -51,10 +52,9 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
       body: Form(
         key: _formKey,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),  // padding 적용
+          padding: EdgeInsets.symmetric(horizontal: 20.w), // padding 적용
           child: Column(
             children: [
-
               SizedBox(height: 10.h),
 
               Text(
@@ -118,8 +118,6 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
                           uid: formData.state!.uid,
                           displayName: nameController.text.trim(),
                           email: formData.state!.email,
-                          followers: [],
-                          following: [],
                           photoURL: formData.state!.photoURL,
                         );
 
@@ -145,7 +143,8 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
                           print('먼데이거 $result');
                           // 실패 메시지를 스낵바로 표시
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(result)),  // 여기서 result가 e.message
+                            SnackBar(
+                                content: Text(result)), // 여기서 result가 e.message
                           );
                         }
                       } catch (error) {

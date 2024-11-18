@@ -1,8 +1,9 @@
-import 'package:app_team2/providers/post_provider.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/post/post_provider.dart';
 
 class CommentDialog extends ConsumerStatefulWidget {
   final String postId;
