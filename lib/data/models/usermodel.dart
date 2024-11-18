@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 
 class UserModel {
@@ -9,6 +8,7 @@ class UserModel {
   final List<String>? followers;
   final List<String>? following;
   final String photoURL;
+
   UserModel({
     required this.uid,
     required this.displayName,
@@ -38,14 +38,14 @@ class UserModel {
 
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
-  
+
     result.addAll({'uid': uid});
     result.addAll({'displayName': displayName});
     result.addAll({'email': email});
-    result.addAll({'followers': followers});
-    result.addAll({'following': following});
+    result.addAll({'followers': followers?.join(',')});
+    result.addAll({'following': following?.join(',')});
     result.addAll({'photoURL': photoURL});
-  
+
     return result;
   }
 
@@ -54,8 +54,8 @@ class UserModel {
       uid: map['uid'] ?? '',
       displayName: map['displayName'] ?? '',
       email: map['email'] ?? '',
-      followers: map['followers'] != null ? List<String>.from(map['followers']) : null,
-      following: map['following'] != null ? List<String>.from(map['following']) : null,
+      followers: map['followers'] != null ? List<String>.from(map['followers'].split(',')) : null,
+      following: map['following'] != null ? List<String>.from(map['following'].split(',')) : null,
       photoURL: map['photoURL'] ?? '',
     );
   }
@@ -72,23 +72,23 @@ class UserModel {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is UserModel &&
-      other.uid == uid &&
-      other.displayName == displayName &&
-      other.email == email &&
-      listEquals(other.followers, followers) &&
-      listEquals(other.following, following) &&
-      other.photoURL == photoURL;
+        other.uid == uid &&
+        other.displayName == displayName &&
+        other.email == email &&
+        listEquals(other.followers, followers) &&
+        listEquals(other.following, following) &&
+        other.photoURL == photoURL;
   }
 
   @override
   int get hashCode {
     return uid.hashCode ^
-      displayName.hashCode ^
-      email.hashCode ^
-      followers.hashCode ^
-      following.hashCode ^
-      photoURL.hashCode;
+    displayName.hashCode ^
+    email.hashCode ^
+    followers.hashCode ^
+    following.hashCode ^
+    photoURL.hashCode;
   }
 }

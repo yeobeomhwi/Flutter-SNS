@@ -15,16 +15,18 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     try {
       state = ProfileState(isLoading: true);
 
+      print('1');
       final firebaseUser = FirebaseService().getCurrentUser();
       if (firebaseUser == null) {
         state = ProfileState(error: '로그인된 사용자가 없습니다.');
         return;
       }
-
+      print('2');
       final dbHelper = DatabaseHelper();
       String localPhotoURL = '이미지 없음';
 
       if (firebaseUser.photoURL != null) {
+        print('3');
         final imageUrl = firebaseUser.photoURL!;
         final response = await http.get(Uri.parse(imageUrl));
 
@@ -41,6 +43,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         }
       }
 
+      print('4');
       final newUser = UserModel(
         uid: firebaseUser.uid,
         displayName: firebaseUser.displayName ?? '이름 없음',
@@ -48,8 +51,10 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         photoURL: localPhotoURL,
       );
 
+      print('5');
       await dbHelper.insertUser(newUser);
 
+      print('6');
       state = ProfileState(user: newUser);
     } catch (e) {
       state = ProfileState(error: '데이터 로드 실패: $e');
@@ -87,6 +92,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       // 캐시 비우기
       final imageProvider = FileImage(imageFile);
       await imageProvider.evict();
+
       await saveImageLocally(imageFile);
 
 

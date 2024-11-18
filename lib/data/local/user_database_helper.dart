@@ -3,7 +3,6 @@ import 'package:path/path.dart';
 
 import '../models/usermodel.dart';
 
-
 class DatabaseHelper {
   static Database? _database;
   static const String _dbName = 'users.db';  // 데이터베이스 이름
@@ -21,25 +20,42 @@ class DatabaseHelper {
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, _dbName);  // 데이터베이스 파일 경로
 
-    return openDatabase(path, version: 1, onCreate: _onCreate);
+    return openDatabase(
+      path,
+      version: 4,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
   }
 
   // 테이블 생성
   Future<void> _onCreate(Database db, int version) async {
-    await db.execute('''
+    await db.execute(''' 
     CREATE TABLE $_tableName (
       uid TEXT PRIMARY KEY,
       displayName TEXT,
       email TEXT,
-      photoURL TEXT
+      photoURL TEXT,
     )
     ''');
+  }
+
+  // 데이터베이스 버전 업그레이드 처리
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE $_tableName ADD COLUMN followers TEXT;');
+      await db.execute('ALTER TABLE $_tableName ADD COLUMN following TEXT;');
+    }
   }
 
   // UserModel 삽입
   Future<int> insertUser(UserModel user) async {
     final db = await database;
-    return await db.insert(_tableName, user.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    return await db.insert(
+      _tableName,
+      user.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   // 특정 사용자 한 명을 조회하는 함수
