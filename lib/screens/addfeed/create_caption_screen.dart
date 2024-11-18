@@ -15,7 +15,7 @@ class CreateCaptionScreen extends ConsumerStatefulWidget {
 
 class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   final TextEditingController _captionController = TextEditingController();
-  bool _isLoading = false; // 로딩 상태 변수 추가
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -86,7 +86,7 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                             const String profileImage =
                                 'https://via.placeholder.com/150';
 
-                            // PostNotifier를 사용하여 포스트 추가
+                            // PostNotifier를 사용해 포스트 추가
                             await ref.read(postProvider.notifier).addPost(
                                   userId: userId,
                                   userName: userName,
@@ -95,7 +95,6 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                                   caption: _captionController.text,
                                 );
 
-                            // 성공 메시지 표시
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
