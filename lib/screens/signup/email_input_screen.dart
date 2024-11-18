@@ -1,5 +1,5 @@
 import 'package:app_team2/data/models/usermodel.dart';
-import 'package:app_team2/providers/signup_providers.dart';
+import 'package:app_team2/providers/signup/signup_providers.dart';
 import 'package:app_team2/utils/extensions/email_vaildator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

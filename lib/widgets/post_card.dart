@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:app_team2/data/models/post.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/post/post_provider.dart';
 import '../services/firebase_service.dart';
-import '../providers/post_provider.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final Post post;
