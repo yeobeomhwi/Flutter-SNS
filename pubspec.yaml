@@ -55,13 +55,8 @@ dependencies:
   http: ^1.2.2
   top_snackbar_flutter: ^3.1.0
   toastification: ^2.3.0
-<<<<<<< HEAD
-  path: ^1.9.0
-=======
   firebase_messaging: ^15.1.5
   permission_handler: ^11.3.1
-
->>>>>>> YBH
 
 dev_dependencies:
   flutter_test:
