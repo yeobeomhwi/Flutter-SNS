@@ -85,7 +85,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     // postProvider에서 상태를 가져옵니다.
     final postState = ref.watch(postProvider);
-    print('Current posts in state: ${postState.posts.length}');
 
     return Scaffold(
       appBar: AppBar(
@@ -108,21 +107,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: postState.isLoading
           ? const Center(child: CircularProgressIndicator()) // 로딩 중일 때 인디케이터
           : postState.error != null
-              ? Center(child: Text('오류 발생: ${postState.error}')) // 오류 메시지
-              : postState.posts.isEmpty
-                  ? const Center(child: Text('포스트가 없습니다.')) // 포스트가 없을 때 메시지
-                  : Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 0, horizontal: 8.0),
-                      child: ListView.builder(
-                        itemCount: postState.posts.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return PostCard(
-                            post: postState.posts[index],
-                          );
-                        },
-                      ),
-                    ),
+          ? Center(child: Text('오류 발생: ${postState.error}')) // 오류 메시지
+          : postState.posts.isEmpty
+          ? const Center(child: Text('포스트가 없습니다.')) // 포스트가 없을 때 메시지
+          : Padding(
+        padding: const EdgeInsets.symmetric(
+            vertical: 0, horizontal: 8.0),
+        child: ListView.builder(
+          itemCount: postState.posts.length,
+          itemBuilder: (BuildContext context, int index) {
+            return PostCard(
+              post: postState.posts[index],
+            );
+          },
+        ),
+      ),
     );
   }
 }

@@ -100,6 +100,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                             passwordController.text,
                           );
                           await firebaseService.getFCMToken();
+                          await firebaseService.CreateNotificationsTable();
                           GoRouter.of(context).go('/Main');
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -127,6 +128,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                           const SnackBar(content: Text('구글 로그인 성공')),
                         );
                         await firebaseService.getFCMToken();
+                        await firebaseService.CreateNotificationsTable();
                         GoRouter.of(context).go('/Main');
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(

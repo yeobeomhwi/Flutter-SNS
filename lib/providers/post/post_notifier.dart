@@ -1,48 +1,71 @@
-import 'package:app_team2/data/models/post.dart';
-import 'package:app_team2/data/repositories/post_repository.dart';
-import 'package:app_team2/providers/post/post_state.dart';
+import 'dart:async';
 
+import 'package:app_team2/data/models/post.dart';
+import 'package:app_team2/providers/post/post_state.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class PostNotifier extends StateNotifier<PostState> {
-  final PostRepository _postRepository;
+  final FirebaseFirestore _firestore;
 
-  PostNotifier(this._postRepository) : super(PostState(posts: [])) {
-    _loadPosts();
+  PostNotifier(this._firestore) : super(PostState(posts: [])) {
+    _subscribeToPostsCollection();
   }
 
-  Future<void> _loadPosts() async {
-    try {
-      state = state.copyWith(isLoading: true);
-      final posts = await _postRepository.getAllPosts();
-      state = state.copyWith(posts: posts, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
-    }
+  StreamSubscription<QuerySnapshot>? _subscription;
+
+  void _subscribeToPostsCollection() {
+    state = state.copyWith(isLoading: true);
+
+    _subscription = _firestore
+        .collection('posts')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .listen(
+          (snapshot) {
+        final posts = snapshot.docs.map((doc) {
+          final data = doc.data();
+          return Post(
+            postId: doc.id,
+            userId: data['userId'] as String,
+            userName: data['userName'] as String,
+            profileImage: data['profileImage'] as String,
+            imageUrls: List<String>.from(data['imageUrls'] as List),
+            caption: data['caption'] as String,
+            createdAt: (data['createdAt'] as Timestamp).toDate(),
+            likes: List<String>.from(data['likes'] as List),
+            comments: List<Map<String, dynamic>>.from(data['comments'] as List),
+          );
+        }).toList();
+
+        state = state.copyWith(posts: posts, isLoading: false);
+      },
+      onError: (error) {
+        state = state.copyWith(error: error.toString(), isLoading: false);
+      },
+    );
   }
 
   Future<void> addPost({
     required String userId,
     required String userName,
     required String profileImage,
-    required List<String> imagePaths,
+    required List<String> imageUrls,
     required String caption,
   }) async {
     try {
-      final newPost = Post(
-        postId: DateTime.now().millisecondsSinceEpoch.toString(), // 고유 ID 생성
-        userId: userId,
-        userName: userName,
-        profileImage: profileImage,
-        imagePaths: imagePaths,
-        caption: caption,
-        createdAt: DateTime.now(),
-        likes: [],
-        comments: [],
-      );
+      final newPost = {
+        'userId': userId,
+        'userName': userName,
+        'profileImage': profileImage,
+        'imageUrls': imageUrls,
+        'caption': caption,
+        'createdAt': FieldValue.serverTimestamp(),
+        'likes': [],
+        'comments': [],
+      };
 
-      await _postRepository.savePost(newPost);
-      await _loadPosts(); // 포스트 목록 새로고침
+      await _firestore.collection('posts').add(newPost);
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -50,8 +73,7 @@ class PostNotifier extends StateNotifier<PostState> {
 
   Future<void> deletePost(String postId) async {
     try {
-      await _postRepository.deletePost(postId);
-      await _loadPosts();
+      await _firestore.collection('posts').doc(postId).delete();
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -59,19 +81,22 @@ class PostNotifier extends StateNotifier<PostState> {
 
   Future<void> likePost(String postId, String userId) async {
     try {
-      final post = await _postRepository.getPostById(postId);
-      if (post == null) return;
+      final postRef = _firestore.collection('posts').doc(postId);
+      final postDoc = await postRef.get();
 
-      List<String> updatedLikes = List.from(post.likes);
-      if (updatedLikes.contains(userId)) {
-        updatedLikes.remove(userId);
+      if (!postDoc.exists) return;
+
+      final likes = List<String>.from(postDoc.data()?['likes'] as List);
+
+      if (likes.contains(userId)) {
+        await postRef.update({
+          'likes': FieldValue.arrayRemove([userId])
+        });
       } else {
-        updatedLikes.add(userId);
+        await postRef.update({
+          'likes': FieldValue.arrayUnion([userId])
+        });
       }
-
-      final updatedPost = post.copyWith(likes: updatedLikes);
-      await _postRepository.updatePost(updatedPost);
-      await _loadPosts();
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -84,23 +109,19 @@ class PostNotifier extends StateNotifier<PostState> {
     required String comment,
   }) async {
     try {
-      final post = await _postRepository.getPostById(postId);
-      if (post == null) return;
-
+      final now = DateTime.now();
       final commentData = {
-        'commentId': DateTime.now().millisecondsSinceEpoch.toString(),
+        'commentId': now.millisecondsSinceEpoch.toString(), // 고유 ID 추가
         'userId': userId,
         'userName': userName,
         'comment': comment,
-        'createdAt': DateTime.now().toIso8601String(),
+        'createdAt': Timestamp.fromDate(
+            now), // serverTimestamp() 대신 현재 시간을 Timestamp로 변환
       };
 
-      List<Map<String, dynamic>> updatedComments = List.from(post.comments);
-      updatedComments.add(commentData);
-
-      final updatedPost = post.copyWith(comments: updatedComments);
-      await _postRepository.updatePost(updatedPost);
-      await _loadPosts();
+      await _firestore.collection('posts').doc(postId).update({
+        'comments': FieldValue.arrayUnion([commentData])
+      });
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -111,18 +132,28 @@ class PostNotifier extends StateNotifier<PostState> {
     required String commentId,
   }) async {
     try {
-      final post = await _postRepository.getPostById(postId);
-      if (post == null) return;
+      // 먼저 현재 게시물의 댓글 목록을 가져옵니다
+      final docSnapshot =
+      await _firestore.collection('posts').doc(postId).get();
+      final comments = List<Map<String, dynamic>>.from(
+          docSnapshot.data()?['comments'] ?? []);
 
-      List<Map<String, dynamic>> updatedComments = List.from(post.comments);
-      updatedComments
-          .removeWhere((comment) => comment['commentId'] == commentId);
+      // commentId와 일치하는 댓글을 찾아서 제거
+      comments.removeWhere((comment) => comment['commentId'] == commentId);
 
-      final updatedPost = post.copyWith(comments: updatedComments);
-      await _postRepository.updatePost(updatedPost);
-      await _loadPosts();
+      // 업데이트된 댓글 목록을 저장
+      await _firestore
+          .collection('posts')
+          .doc(postId)
+          .update({'comments': comments});
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 }

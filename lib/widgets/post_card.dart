@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:app_team2/widgets/comment_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -144,7 +142,7 @@ class _PostCardState extends ConsumerState<PostCard> {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: FileImage(File(widget.post.profileImage)),
+                backgroundImage: NetworkImage(widget.post.profileImage),
                 backgroundColor: Colors.grey,
               ),
               const SizedBox(width: 8),
@@ -161,44 +159,44 @@ class _PostCardState extends ConsumerState<PostCard> {
           height: 300,
           child: PageView.builder(
             controller: _controller,
-            itemCount: widget.post.imagePaths.length,
+            itemCount: widget.post.imageUrls.length,
             itemBuilder: (context, index) {
-              final imagePath = widget.post.imagePaths[index];
-              return FutureBuilder<bool>(
-                future: File(imagePath).exists(), // 파일 존재 여부 확인
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(), // 로딩 인디케이터
-                    );
-                  } else if (snapshot.hasError || !snapshot.data!) {
-                    return const Center(
-                      child: Icon(
-                        Icons.error_outline,
-                        size: 40,
-                        color: Colors.grey,
-                      ),
-                    );
-                  } else {
-                    return Image.file(
-                      File(imagePath),
-                      width: double.infinity,
-                      height: 300,
-                      fit: BoxFit.cover,
-                    );
-                  }
+              return Image.network(
+                widget.post.imageUrls[index],
+                width: double.infinity,
+                height: 300,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(
+                    child: Icon(
+                      Icons.error_outline,
+                      size: 40,
+                      color: Colors.grey,
+                    ),
+                  );
                 },
               );
             },
           ),
         ),
-        if (widget.post.imagePaths.length > 1)
+        if (widget.post.imageUrls.length > 1)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Center(
               child: SmoothPageIndicator(
                 controller: _controller,
-                count: widget.post.imagePaths.length,
+                count: widget.post.imageUrls.length,
                 effect: const WormEffect(
                   dotWidth: 8.0,
                   dotHeight: 8.0,

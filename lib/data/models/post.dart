@@ -3,7 +3,7 @@ class Post {
   final String userId;
   final String userName;
   final String profileImage;
-  final List<String> imagePaths;
+  final List<String> imageUrls;
   final String caption;
   final DateTime createdAt;
   final List<String> likes;
@@ -14,7 +14,7 @@ class Post {
     required this.userId,
     required this.userName,
     required this.profileImage,
-    required this.imagePaths,
+    required this.imageUrls,
     required this.caption,
     required this.createdAt,
     required this.likes,
@@ -26,7 +26,7 @@ class Post {
     String? userId,
     String? userName,
     String? profileImage,
-    List<String>? imagePaths,
+    List<String>? imageUrls,
     String? caption,
     DateTime? createdAt,
     List<String>? likes,
@@ -37,7 +37,7 @@ class Post {
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
       profileImage: profileImage ?? this.profileImage,
-      imagePaths: imagePaths ?? this.imagePaths,
+      imageUrls: imageUrls ?? this.imageUrls,
       caption: caption ?? this.caption,
       createdAt: createdAt ?? this.createdAt,
       likes: likes ?? this.likes,
