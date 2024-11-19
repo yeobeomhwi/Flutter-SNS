@@ -2,6 +2,19 @@
 
 A new Flutter project.
 
+## Firebase Emulators 실행 방법
+
+1. Firebase 도구 설치 코드
+```
+$ npm install -g firebase-tools
+```
+
+2. Firebase Emulators 실행
+```
+$ firebase emulators:start
+```
+
+
 ## 사용 패키지
 
 - **firebase_core: ^3.7.0** [패키지 가이드](https://pub.dev/packages/firebase_core)

@@ -35,7 +35,7 @@ class DatabaseHelper {
       uid TEXT PRIMARY KEY,
       displayName TEXT,
       email TEXT,
-      photoURL TEXT,
+      photoURL TEXT
     )
     ''');
   }

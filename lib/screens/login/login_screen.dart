@@ -99,6 +99,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                             emailController.text,
                             passwordController.text,
                           );
+                          await firebaseService.getFCMToken();
                           GoRouter.of(context).go('/Main');
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -121,6 +122,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                     buttonType: SocialLoginButtonType.google,
                     onPressed: () async {
                       try {
+                        await firebaseService.getFCMToken();
                         await firebaseService.signInWithGoogle();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('구글 로그인 성공')),

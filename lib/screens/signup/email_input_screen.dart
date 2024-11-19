@@ -102,8 +102,6 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
                         uid: formData.state!.uid,
                         displayName: formData.state!.displayName,
                         email: emailController.text.trim(),
-                        followers: [],
-                        following: [],
                         photoURL: formData.state!.photoURL,
                       ));
 

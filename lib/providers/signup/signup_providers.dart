@@ -13,8 +13,6 @@ final signUpFormDataProvider = StateProvider<UserModel?>((ref) {
       uid: '',
       displayName: '',
       email: '',
-      followers: [],
-      following: [],
       photoURL:
           'https://firebasestorage.googleapis.com/v0/b/app-team2-2.firebasestorage.app/o/Default-Profile.png?alt=media&token=7da8bc98-ff57-491a-81a7-113b4a25cc62');
 });

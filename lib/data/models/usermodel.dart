@@ -5,16 +5,12 @@ class UserModel {
   final String uid;
   final String displayName;
   final String email;
-  final List<String>? followers;
-  final List<String>? following;
   final String photoURL;
 
   UserModel({
     required this.uid,
     required this.displayName,
     required this.email,
-    this.followers,
-    this.following,
     required this.photoURL,
   });
 
@@ -22,16 +18,12 @@ class UserModel {
     String? uid,
     String? displayName,
     String? email,
-    List<String>? followers,
-    List<String>? following,
     String? photoURL,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
       displayName: displayName ?? this.displayName,
       email: email ?? this.email,
-      followers: followers ?? this.followers,
-      following: following ?? this.following,
       photoURL: photoURL ?? this.photoURL,
     );
   }
@@ -42,8 +34,6 @@ class UserModel {
     result.addAll({'uid': uid});
     result.addAll({'displayName': displayName});
     result.addAll({'email': email});
-    result.addAll({'followers': followers?.join(',')});
-    result.addAll({'following': following?.join(',')});
     result.addAll({'photoURL': photoURL});
 
     return result;
@@ -54,8 +44,6 @@ class UserModel {
       uid: map['uid'] ?? '',
       displayName: map['displayName'] ?? '',
       email: map['email'] ?? '',
-      followers: map['followers'] != null ? List<String>.from(map['followers'].split(',')) : null,
-      following: map['following'] != null ? List<String>.from(map['following'].split(',')) : null,
       photoURL: map['photoURL'] ?? '',
     );
   }
@@ -66,7 +54,7 @@ class UserModel {
 
   @override
   String toString() {
-    return 'UserModel(uid: $uid, displayName: $displayName, email: $email, followers: $followers, following: $following, photoURL: $photoURL)';
+    return 'UserModel(uid: $uid, displayName: $displayName, email: $email, photoURL: $photoURL)';
   }
 
   @override
@@ -77,8 +65,6 @@ class UserModel {
         other.uid == uid &&
         other.displayName == displayName &&
         other.email == email &&
-        listEquals(other.followers, followers) &&
-        listEquals(other.following, following) &&
         other.photoURL == photoURL;
   }
 
@@ -87,8 +73,6 @@ class UserModel {
     return uid.hashCode ^
     displayName.hashCode ^
     email.hashCode ^
-    followers.hashCode ^
-    following.hashCode ^
     photoURL.hashCode;
   }
 }
