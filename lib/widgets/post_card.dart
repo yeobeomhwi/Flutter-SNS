@@ -8,7 +8,6 @@ import '../services/firebase_service.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final Post post;
-
   const PostCard({
     super.key,
     required this.post,

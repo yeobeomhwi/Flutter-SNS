@@ -405,11 +405,49 @@ class FirebaseService {
     // 문서가 존재하지 않으면 새로 생성
     if (!docSnapshot.exists) {
       await docRef.set({
-        'message': [],
+        'messages': [],
       });
       print("새로운 알림 테이블이 생성되었습니다.");
     } else {
       print("알림 테이블이 이미 존재합니다.");
     }
   }
+
+  // 알림 데이터 가져오기
+  Future<List<Map<String, dynamic>>> getNotifications() async {
+    try {
+      print('시작');
+
+      // Firestore에서 알림 문서 가져오기
+      var docRef = _firestore.collection('notifications').doc(_auth.currentUser?.uid);
+      print('Document Reference: $docRef');  // Print the document reference
+
+      var docSnapshot = await docRef.get();
+      print('Document Snapshot: ${docSnapshot.exists}'); // Print whether the document exists
+
+      // 문서가 존재하면 메시지 가져오기
+      if (docSnapshot.exists) {
+        var messages = docSnapshot.data()?['messages'] as List<dynamic>?;
+        print('Messages: $messages');  // Print the raw messages data
+
+        if (messages != null) {
+          // 메시지 리스트를 반환
+          List<Map<String, dynamic>> notifications = List<Map<String, dynamic>>.from(messages);
+          print('Converted Notifications: $notifications');  // Print the converted notifications list
+          return notifications;
+        } else {
+          print("알림 메시지가 없습니다.");
+          return [];
+        }
+      } else {
+        print("알림 테이블이 존재하지 않습니다.");
+        return [];
+      }
+    } catch (e) {
+      print("알림 데이터를 가져오는 중 오류 발생: $e");
+      return [];
+    }
+  }
+
+
 }
