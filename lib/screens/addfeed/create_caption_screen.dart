@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:app_team2/providers/post/picked_images_provider.dart';
 import 'package:app_team2/providers/post/post_provider.dart';
 import 'package:flutter/material.dart';

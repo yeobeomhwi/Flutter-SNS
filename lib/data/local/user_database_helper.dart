@@ -22,7 +22,7 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 1,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -30,7 +30,6 @@ class DatabaseHelper {
 
   // 테이블 생성
   Future<void> _onCreate(Database db, int version) async {
-    await db.execute('DROP TABLE IF EXISTS $_tableName');
     await db.execute('''
     CREATE TABLE $_tableName (
       uid TEXT PRIMARY KEY,
