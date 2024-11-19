@@ -43,7 +43,7 @@ dependencies:
   firebase_auth: ^5.3.2
   sqflite: ^2.4.1
   flutter_riverpod: ^2.6.1
-  flutter_local_notifications: ^18.0.0
+  flutter_local_notifications: ^18.0.1
   connectivity_plus: ^6.1.0
   firebase_storage: ^12.3.5
   cloud_firestore: ^5.4.5
@@ -59,6 +59,7 @@ dependencies:
   top_snackbar_flutter: ^3.1.0
   toastification: ^2.3.0
   firebase_messaging: ^15.1.5
+  permission_handler: ^11.3.1
 
 
 dev_dependencies:
