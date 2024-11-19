@@ -55,6 +55,7 @@ class UserModel {
   @override
   String toString() {
     return 'UserModel(uid: $uid, displayName: $displayName, email: $email photoURL: $photoURL)';
+
   }
 
   @override
@@ -74,5 +75,6 @@ class UserModel {
         displayName.hashCode ^
         email.hashCode ^
         photoURL.hashCode;
+
   }
 }

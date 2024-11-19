@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_team2/widgets/post_card.dart';
 import 'package:app_team2/widgets/top_network_bar.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,6 +30,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     initConnectivity();
+    FCMtoken();
   }
 
   @override
@@ -36,6 +38,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // 스트림 리스너 해제
     _connectivitySubscription.cancel();
     super.dispose();
+  }
+
+  Future<void> FCMtoken() async {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    print('=========fcmToken: $fcmToken');
   }
 
   // 초기 연결 상태 확인

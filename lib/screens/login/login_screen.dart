@@ -44,7 +44,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                 SizedBox(height: 96.w), // 위쪽 공간
                 const Center(child: Text('Logo')), // 로고 위치
                 SizedBox(height: 120.h), // 로고와 입력 필드 사이의 공간
-        
+
                 // 이메일 입력 필드
                 CustomTextFiled(
                   controller: emailController,
@@ -62,7 +62,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                   },
                 ),
                 SizedBox(height: 15.h),
-        
+
                 // 비밀번호 입력 필드
                 CustomTextFiled(
                   controller: passwordController,
@@ -80,7 +80,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                   },
                 ),
                 SizedBox(height: 10.h),
-        
+
                 // 로그인 버튼
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10.w),
@@ -99,6 +99,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                             emailController.text,
                             passwordController.text,
                           );
+                          await firebaseService.getFCMToken();
                           GoRouter.of(context).go('/Main');
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -109,9 +110,9 @@ class _LoginScreen2State extends State<LoginScreen> {
                     },
                   ),
                 ),
-        
+
                 SizedBox(height: 10.h),
-        
+
                 // 구글 로그인 버튼
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10.w),
@@ -125,6 +126,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('구글 로그인 성공')),
                         );
+                        await firebaseService.getFCMToken();
                         GoRouter.of(context).go('/Main');
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -135,7 +137,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                   ),
                 ),
                 SizedBox(height: 10.h),
-        
+
                 // 회원가입 버튼
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15.w),
