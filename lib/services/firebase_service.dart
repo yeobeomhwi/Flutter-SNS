@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -210,15 +211,15 @@ class FirebaseService {
 // FCM 토큰 가져오기 (Firebase Cloud Messaging)
   Future<String?> getFCMToken() async {
     try {
-      // 현재 사용자의 Firebase ID Token을 가져옵니다
-      final token = await _auth.currentUser?.getIdToken();
+      // 현재 사용자의 Firebase ID Token을 가져옵니
 
+      final fcmToken = await FirebaseMessaging.instance.getToken();
       // ID Token을 Firebase Firestore에 fcmTokens로 저장합니다
-      if (token != null) {
-        await _saveFCMTokenToFirestore(token);
+      if (fcmToken != null) {
+        await _saveFCMTokenToFirestore(fcmToken);
       }
 
-      return token;
+      return fcmToken;
     } catch (e) {
       print("FCM 토큰 가져오기 중 오류 발생: $e");
       rethrow;
@@ -226,7 +227,7 @@ class FirebaseService {
   }
 
   // FCM 토큰을 Firestore에 저장하는 함수
-  Future<void> _saveFCMTokenToFirestore(String token) async {
+  Future<void> _saveFCMTokenToFirestore(String fcmToken) async {
     try {
       final uid = _auth.currentUser?.uid;
       if (uid == null) {
@@ -241,12 +242,12 @@ class FirebaseService {
       if (userDoc.exists) {
         // 기존에 FCM 토큰이 있는 경우 배열에 추가
         await userRef.update({
-          'fcmTokens': FieldValue.arrayUnion([token]),
+          'fcmTokens': FieldValue.arrayUnion([fcmToken]),
         });
       } else {
         // 사용자 문서가 없으면 새로 생성
         await userRef.set({
-          'fcmTokens': [token],
+          'fcmTokens': [fcmToken],
         });
       }
 
