@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:app_team2/providers/post/picked_images_provider.dart';
 import 'package:app_team2/providers/post/post_provider.dart';
+import 'package:app_team2/providers/profile/profile_proivder.dart';
+import 'package:app_team2/services/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -80,17 +82,39 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                           });
 
                           try {
-                            // SharedPreferences에서 현재 로그인한 사용자 정보를 가져오는 로직 필요
-                            const String userId = 'local_user_id';
-                            const String userName = 'local_user_name';
-                            const String profileImage =
-                                'https://via.placeholder.com/150';
+                            // Firebase에서 현재 로그인한 사용자의 uid 가져오기
+                            final firebaseUser =
+                                FirebaseService().getCurrentUser();
+                            if (firebaseUser == null) {
+                              throw Exception('로그인된 사용자가 없습니다');
+                            }
+
+                            // 먼저 온라인으로 데이터를 가져오기 시도
+                            await ref
+                                .read(profileProvider.notifier)
+                                .loadUserDataOnline(firebaseUser.uid);
+
+                            // 온라인 로드가 실패하면 오프라인 데이터 시도
+                            final userState = ref.read(profileProvider);
+                            if (userState.error != null) {
+                              await ref
+                                  .read(profileProvider.notifier)
+                                  .loadUserDataOffline(firebaseUser.uid);
+                            }
+
+                            // 최종 상태 확인
+                            final finalState = ref.read(profileProvider);
+                            final currentUser = finalState.user;
+
+                            if (currentUser == null) {
+                              throw Exception('사용자 정보를 불러올 수 없습니다.');
+                            }
 
                             // PostNotifier를 사용해 포스트 추가
                             await ref.read(postProvider.notifier).addPost(
-                                  userId: userId,
-                                  userName: userName,
-                                  profileImage: profileImage,
+                                  userId: currentUser.uid,
+                                  userName: currentUser.displayName,
+                                  profileImage: currentUser.photoURL,
                                   imagePaths: imagePaths,
                                   caption: _captionController.text,
                                 );

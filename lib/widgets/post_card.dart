@@ -144,7 +144,7 @@ class _PostCardState extends ConsumerState<PostCard> {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: NetworkImage(widget.post.profileImage),
+                backgroundImage: FileImage(File(widget.post.profileImage)),
                 backgroundColor: Colors.grey,
               ),
               const SizedBox(width: 8),

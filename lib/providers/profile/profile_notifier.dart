@@ -35,6 +35,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
           await file.writeAsBytes(response.bodyBytes);
 
           localPhotoURL = localImagePath;
+          print('localPhotoURL: $localPhotoURL');
         } else {
           print('이미지 다운로드 실패: ${response.statusCode}');
         }
