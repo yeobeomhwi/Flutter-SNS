@@ -78,6 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     // postProvider에서 상태를 가져옵니다.
     final postState = ref.watch(postProvider);
+    print('Current posts in state: ${postState.posts.length}');
 
     return Scaffold(
       appBar: AppBar(

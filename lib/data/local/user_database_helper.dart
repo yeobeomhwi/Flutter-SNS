@@ -5,8 +5,8 @@ import '../models/usermodel.dart';
 
 class DatabaseHelper {
   static Database? _database;
-  static const String _dbName = 'users.db';  // 데이터베이스 이름
-  static const String _tableName = 'users';  // 테이블 이름
+  static const String _dbName = 'users.db'; // 데이터베이스 이름
+  static const String _tableName = 'users'; // 테이블 이름
 
   // 데이터베이스 열기
   Future<Database> get database async {
@@ -18,7 +18,7 @@ class DatabaseHelper {
   // 데이터베이스 초기화
   Future<Database> _initDatabase() async {
     final databasePath = await getDatabasesPath();
-    final path = join(databasePath, _dbName);  // 데이터베이스 파일 경로
+    final path = join(databasePath, _dbName); // 데이터베이스 파일 경로
 
     return openDatabase(
       path,
@@ -30,12 +30,12 @@ class DatabaseHelper {
 
   // 테이블 생성
   Future<void> _onCreate(Database db, int version) async {
-    await db.execute(''' 
+    await db.execute('''
     CREATE TABLE $_tableName (
       uid TEXT PRIMARY KEY,
       displayName TEXT,
       email TEXT,
-      photoURL TEXT,
+      photoURL TEXT
     )
     ''');
   }
@@ -70,7 +70,7 @@ class DatabaseHelper {
     if (maps.isNotEmpty) {
       return UserModel.fromMap(maps.first);
     } else {
-      return null;  // 사용자가 없으면 null 반환
+      return null; // 사용자가 없으면 null 반환
     }
   }
 

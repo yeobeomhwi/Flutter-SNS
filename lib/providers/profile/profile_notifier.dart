@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../services/firebase_service.dart';
 import '../../data/local/user_database_helper.dart';
 import '../../data/models/usermodel.dart';

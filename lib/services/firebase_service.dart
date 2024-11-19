@@ -233,6 +233,7 @@ class FirebaseService {
 
   Future<String> uploadSingleImage(File imageFile, String path) async {
     try {
+      // 이미지 사이즈 조절
       // Storage에 업로드
       final storageRef = _storage.ref().child(path);
       final uploadTask = storageRef.putFile(imageFile);

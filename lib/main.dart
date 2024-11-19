@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         routerConfig: CustomRouter.router,
-        title: 'Flutter Demo',
+        title: 'Anytime Post',
         theme: ThemeData.light().copyWith(
             scaffoldBackgroundColor: Colors.white,
             appBarTheme: const AppBarTheme(

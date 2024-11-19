@@ -12,7 +12,8 @@ class EmailInputScreen extends ConsumerStatefulWidget {
   const EmailInputScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _EmailInputScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _EmailInputScreenState();
 }
 
 class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
@@ -46,7 +47,6 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(
             children: [
-
               SizedBox(height: 10.h),
 
               Text(
@@ -99,13 +99,11 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       formData.update((state) => UserModel(
-                        uid: formData.state!.uid,
-                        displayName: formData.state!.displayName,
-                        email: emailController.text.trim(),
-                        followers: [],
-                        following: [],
-                        photoURL: formData.state!.photoURL,
-                      ));
+                            uid: formData.state!.uid,
+                            displayName: formData.state!.displayName,
+                            email: emailController.text.trim(),
+                            photoURL: formData.state!.photoURL,
+                          ));
 
                       pageController.nextPage(
                         duration: const Duration(milliseconds: 300),
