@@ -74,7 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       } else {
         print('인터넷 연결 없음');
         // 네트워크 연결 없음 시 상단에 네트워크 메시지 띄움
-        TopNetworkBar.on(context);
+        TopNetworkBar.on(context,);
         // 오프라인 데이터 로드
       }
     });
