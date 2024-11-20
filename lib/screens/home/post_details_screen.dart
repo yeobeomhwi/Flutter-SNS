@@ -22,23 +22,18 @@ class PostDetailsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          '포스트 상세페이지',
-        ),
+        title: const Text('포스트 상세페이지'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              PostCard(
-                post: post,
-                hideCommentButton: true, // 댓글 버튼 숨기기 옵션 추가
-              ),
-              Comments(postId: postId),
-            ],
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: PostCard(post: post),
           ),
-        ),
+          Expanded(
+            child: Comments(postId: postId),
+          ),
+        ],
       ),
     );
   }
@@ -55,9 +50,22 @@ class Comments extends ConsumerStatefulWidget {
 class _CommentsState extends ConsumerState<Comments> {
   final TextEditingController _commentController = TextEditingController();
   final currentUser = FirebaseAuth.instance.currentUser;
-
-  // 키보드가 올라올 때 화면 자동 스크롤을 위한 컨트롤러
   final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -75,41 +83,32 @@ class _CommentsState extends ConsumerState<Comments> {
           userName: currentUser?.displayName ?? '익명',
           comment: _commentController.text.trim(),
         );
+
     _commentController.clear();
 
-    // 댓글 작성 후 스크롤을 맨 아래로 이동
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+    // 댓글 추가 후 스크롤 최하단으로 이동
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _scrollToBottom();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // 게시물 상태 Provider 구독
     final postState = ref.watch(postProvider);
-
-    // postId와 일치하는 post 찾기
     final post = postState.posts.firstWhere(
       (post) => post.postId == widget.postId,
       orElse: () => throw Exception('포스트를 찾을 수 없습니다'),
     );
     final comments = post.comments;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.6,
-      padding: const EdgeInsets.all(16.0),
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         children: [
-          _buildHeader(),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: _buildHeader(),
+          ),
           Expanded(
             child: _buildCommentsList(comments),
           ),
@@ -120,18 +119,15 @@ class _CommentsState extends ConsumerState<Comments> {
   }
 
   Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: const SizedBox(
-        width: double.infinity,
-        child: Text(
-          'Comments',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.start,
+    return const SizedBox(
+      width: double.infinity,
+      child: Text(
+        'Comments',
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
         ),
+        textAlign: TextAlign.start,
       ),
     );
   }
@@ -160,9 +156,15 @@ class _CommentsState extends ConsumerState<Comments> {
   }
 
   Widget _buildCommentInput(String postId) {
-    return Padding(
+    return Container(
+      color: Colors.white,
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+        bottom: MediaQuery.of(context).viewInsets.bottom > 0
+            ? MediaQuery.of(context).viewInsets.bottom
+            : 8,
+        left: 0,
+        right: 0,
+        top: 0,
       ),
       child: Row(
         children: [
