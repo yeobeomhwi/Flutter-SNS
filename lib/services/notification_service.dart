@@ -25,6 +25,7 @@ Future<void> initializeLocalNotifications() async {
     requestSoundPermission: true,
   );
 
+
   const InitializationSettings initializationSettings = InitializationSettings(
     android: androidInitializationSettings,
     iOS: darwinInitializationSettings,

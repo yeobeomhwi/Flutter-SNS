@@ -71,11 +71,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         TopNetworkBar.off(); // 상단 네트워크 바 숨김
         print('와이파이 또는 모바일 네트워크 연결됨');
         // 네트워크 연결 시 온라인 데이터 로드
+        ref.read(postProvider.notifier).subscribeToPostsCollection();
       } else {
         print('인터넷 연결 없음');
         // 네트워크 연결 없음 시 상단에 네트워크 메시지 띄움
         TopNetworkBar.on(context,);
         // 오프라인 데이터 로드
+        ref.read(postProvider.notifier).fetchCachedPosts();
       }
     });
     // 연결 상태 출력

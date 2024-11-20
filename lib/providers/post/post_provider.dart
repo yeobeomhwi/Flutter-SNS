@@ -6,3 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final postProvider = StateNotifierProvider<PostNotifier, PostState>((ref) {
   return PostNotifier(FirebaseFirestore.instance);
 });
+
+
+final postNotifierProvider = StateNotifierProvider<PostNotifier, PostState>((ref) {
+  return PostNotifier(FirebaseFirestore.instance);
+});

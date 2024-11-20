@@ -1,4 +1,5 @@
 import 'package:app_team2/widgets/comment_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:app_team2/data/models/post.dart';
@@ -8,6 +9,7 @@ import '../services/firebase_service.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final Post post;
+
   const PostCard({
     super.key,
     required this.post,
@@ -139,10 +141,24 @@ class _PostCardState extends ConsumerState<PostCard> {
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: NetworkImage(widget.post.profileImage),
-                backgroundColor: Colors.grey,
+              ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: widget.post.profileImage,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.grey,
+                    child: CircularProgressIndicator(),
+                  ),
+                  errorWidget: (context, url, error) => const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.grey,
+                    child:
+                        Icon(Icons.error_outline, size: 24, color: Colors.grey),
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               Text(widget.post.userName),
@@ -160,31 +176,22 @@ class _PostCardState extends ConsumerState<PostCard> {
             controller: _controller,
             itemCount: widget.post.imageUrls.length,
             itemBuilder: (context, index) {
-              return Image.network(
-                widget.post.imageUrls[index],
+              return CachedNetworkImage(
+                imageUrl: widget.post.imageUrls[index],
                 width: double.infinity,
                 height: 300,
                 fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
-                          : null,
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return const Center(
-                    child: Icon(
-                      Icons.error_outline,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
-                  );
-                },
+                placeholder: (context, url) => Center(
+                  child: CircularProgressIndicator(),
+                ),
+                errorWidget: (context, url, error) => const Center(
+                  child: Icon(
+                    Icons.error_outline,
+                    size: 40,
+                    color: Colors.grey,
+                  ),
+                ),
+                cacheKey: widget.post.imageUrls[index], // 캐시 키 명시
               );
             },
           ),
