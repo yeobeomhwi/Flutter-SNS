@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../providers/network/network_providers.dart';
 import '../../providers/post/post_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -23,6 +24,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  late bool network;
 
   @override
   void initState() {
@@ -68,21 +70,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // 와이파이나 모바일 네트워크가 연결되었으면
       if (result.contains(ConnectivityResult.wifi) ||
           result.contains(ConnectivityResult.mobile)) {
-        TopNetworkBar.off(); // 상단 네트워크 바 숨김
-        print('와이파이 또는 모바일 네트워크 연결됨');
-        // 네트워크 연결 시 온라인 데이터 로드
+        //네트워크 상태
+        ref.read(connectionStateProvider.notifier).state =
+            NetworkConnectionState(isOnline: true);
+        // 상단 네트워크 바 숨김
+        TopNetworkBar.off();
+        // 데이터 로딩
         ref.read(postProvider.notifier).subscribeToPostsCollection();
       } else {
-        print('인터넷 연결 없음');
-        // 네트워크 연결 없음 시 상단에 네트워크 메시지 띄움
-        TopNetworkBar.on(context,);
-        // 오프라인 데이터 로드
+        //네트워크 상태
+        ref.read(connectionStateProvider.notifier).state =
+            ref.read(connectionStateProvider.notifier).state =
+            NetworkConnectionState(isOnline: false);
+        //상단바
+        TopNetworkBar.on(context);
+        //데이터 로딩
         ref.read(postProvider.notifier).fetchCachedPosts();
       }
     });
     // 연결 상태 출력
     print('Connectivity changed: $_connectionStatus');
   }
+
+  // 새로고침 시 데이터 재로딩
+  Future<void> _onRefresh() async {
+    // 네트워크 상태 확인 후 데이터를 다시 로드
+    if (network) {
+      // 네트워크가 연결되어 있으면 최신 데이터를 가져옵니다.
+      ref.read(postProvider.notifier).subscribeToPostsCollection();
+    } else {
+      // 오프라인 상태에서는 캐시된 데이터를 불러옵니다.
+      ref.read(postProvider.notifier).fetchCachedPosts();
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -106,25 +128,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         centerTitle: true,
       ),
       body: RefreshIndicator(
-        onRefresh: () async{ },
+        onRefresh: _onRefresh,
         child: postState.isLoading
             ? const Center(child: CircularProgressIndicator()) // 로딩 중일 때 인디케이터
             : postState.error != null
-            ? Center(child: Text('오류 발생: ${postState.error}')) // 오류 메시지
-            : postState.posts.isEmpty
-            ? const Center(child: Text('포스트가 없습니다.')) // 포스트가 없을 때 메시지
-            : Padding(
-          padding: const EdgeInsets.symmetric(
-              vertical: 0, horizontal: 8.0),
-          child: ListView.builder(
-            itemCount: postState.posts.length,
-            itemBuilder: (BuildContext context, int index) {
-              return PostCard(
-                post: postState.posts[index],
-              );
-            },
-          ),
-        ),
+                ? Center(child: Text('오류 발생: ${postState.error}')) // 오류 메시지
+                : postState.posts.isEmpty
+                    ? const Center(child: Text('포스트가 없습니다.')) // 포스트가 없을 때 메시지
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 0, horizontal: 8.0),
+                        child: ListView.builder(
+                          itemCount: postState.posts.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return PostCard(
+                              post: postState.posts[index],
+                            );
+                          },
+                        ),
+                      ),
       ),
     );
   }

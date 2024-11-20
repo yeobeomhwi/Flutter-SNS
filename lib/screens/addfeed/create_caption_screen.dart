@@ -108,7 +108,7 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                               profileImage: profileImage,
                               createdAt: FieldValue.serverTimestamp(),
                               likes: [],
-                              comments: [], // 로컬에만 저장됨
+                              comments: [],
                             );
 
                             // 성공 메시지 표시

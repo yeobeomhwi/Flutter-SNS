@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:app_team2/widgets/comment_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -176,23 +178,37 @@ class _PostCardState extends ConsumerState<PostCard> {
             controller: _controller,
             itemCount: widget.post.imageUrls.length,
             itemBuilder: (context, index) {
-              return CachedNetworkImage(
-                imageUrl: widget.post.imageUrls[index],
-                width: double.infinity,
-                height: 300,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Center(
-                  child: CircularProgressIndicator(),
-                ),
-                errorWidget: (context, url, error) => const Center(
-                  child: Icon(
-                    Icons.error_outline,
-                    size: 40,
-                    color: Colors.grey,
+              // URL이 "http"로 시작하면 네트워크 이미지를 사용
+              if (widget.post.imageUrls[index].startsWith('http')) {
+                return CachedNetworkImage(
+                  imageUrl: widget.post.imageUrls[index],
+                  width: double.infinity,
+                  height: 300,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Center(
+                    child: CircularProgressIndicator(),
                   ),
-                ),
-                cacheKey: widget.post.imageUrls[index], // 캐시 키 명시
-              );
+                  errorWidget: (context, url, error) => const Center(
+                    child: Icon(
+                      Icons.error_outline,
+                      size: 40,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  cacheKey: widget.post.imageUrls[index],
+                );
+              } else if (widget.post.imageUrls[index].startsWith('/data')) {
+                // URL이 "/data"로 시작하면 로컬 파일에서 이미지 로드
+                return Image.file(
+                  File(widget.post.imageUrls[index]), // 파일에서 로드
+                  width: double.infinity,
+                  height: 300,
+                  fit: BoxFit.cover,
+                );
+              } else {
+                // 다른 경우 처리 (필요에 따라 수정 가능)
+                return const SizedBox.shrink();
+              }
             },
           ),
         ),

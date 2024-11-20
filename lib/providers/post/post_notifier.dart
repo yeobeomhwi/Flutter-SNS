@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:app_team2/data/models/post.dart';
 import 'package:app_team2/providers/post/post_state.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -104,54 +105,55 @@ class PostNotifier extends StateNotifier<PostState> {
     );
   }
 
-  // 새로운 게시물 추가 (오프라인 상태에서 처리)
+  // 게시물 추가 함수
   Future<void> addPost({
-    required String postId,
     required String userId,
     required String userName,
     required String profileImage,
-    required List<String> imageUrls,
     required String caption,
     required bool isSynced,
     required FieldValue createdAt,
     required List<String> likes,
     required List<String> comments,
+    required List<String> imageUrls,
+    required String postId,
   }) async {
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final postId = '$userId$timestamp';
     try {
+            // Firestore에 저장할 데이터
       final newPost = {
         'postId': postId, // 게시물 ID
         'userId': userId, // 작성자 ID
         'userName': userName, // 작성자 이름
         'profileImage': profileImage, // 작성자 프로필 이미지
-        'imageUrls': imageUrls, // 게시물 이미지
+        'imageUrls': imageUrls,
         'caption': caption, // 게시물 내용
-        'isSynced': isSynced, // 동기화 여부a
-        'createdAt': FieldValue.serverTimestamp() ?? Timestamp.now(),
+        'isSynced': false, // 동기화 여부는 오프라인이므로 false
+        'createdAt': createdAt ?? FieldValue.serverTimestamp(),
         'likes': likes, // 좋아요 리스트
         'comments': comments, // 댓글 리스트
       };
 
-      // Firestore에 새로운 게시물 추가
-      await _firestore.collection('posts').doc(postId).set(newPost);
+      // Firestore에 오프라인 상태로 저장
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .set(newPost);
 
-      // 오프라인에서 추가한 데이터를 로컬 캐시에 저장
-      state = state.copyWith(
-          posts: [...state.posts, Post.fromMap(newPost)], isLoading: false);
 
-      // 네트워크가 복구되면 동기화하는 로직 추가 가능
+
+
     } catch (e) {
-      state = state.copyWith(error: e.toString()); // 오류 처리
+      print("게시물 추가 중 오류 발생: $e");
     }
   }
 
   // 임시 저장 경로에 이미지 저장
-  Future<String> saveImageLocally(File imageFile, String postId, int index) async {
+  Future<String> saveImageLocally(
+      File imageFile, String postId, int index) async {
     try {
       // 로컬 경로 얻기
       final directory = await getTemporaryDirectory();
-      final localPath = '${directory.path}/${postId}_$index.jpg';
+      final localPath = '${directory.path}/${postId}_{$index}.jpg';
 
       // 로컬 파일로 저장
       await imageFile.copy(localPath);
@@ -162,6 +164,26 @@ class PostNotifier extends StateNotifier<PostState> {
       rethrow;
     }
   }
+
+// Firebase Storage에 이미지 업로드
+  Future<String> uploadImageToStorage(
+      File imageFile, String postId, int index) async {
+    try {
+      // Firebase Storage 경로 정의
+      final path = 'post_images/${postId}_{$index}.jpg';
+      final storageRef = FirebaseStorage.instance.ref().child(path);
+
+      // Firebase Storage에 이미지 업로드
+      final uploadTask = storageRef.putFile(imageFile);
+      final snapshot = await uploadTask.whenComplete(() {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print("이미지 업로드 중 오류 발생: $e");
+      rethrow;
+    }
+  }
+
 
   // 게시물 삭제
   Future<void> deletePost(String postId) async {
