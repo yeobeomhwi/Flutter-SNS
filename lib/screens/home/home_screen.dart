@@ -72,8 +72,16 @@ class HomeScreen extends ConsumerWidget {
                         child: ListView.builder(
                           itemCount: postState.posts.length,
                           itemBuilder: (BuildContext context, int index) {
-                            return PostCard(
-                              post: postState.posts[index],
+                            return GestureDetector(
+                              onTap: () {
+                                GoRouter.of(context).push(
+                                  '/PostDetails',
+                                  extra: postState.posts[index].postId,
+                                );
+                              },
+                              child: PostCard(
+                                post: postState.posts[index],
+                              ),
                             );
                           },
                         ),
