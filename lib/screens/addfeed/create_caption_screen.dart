@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../data/models/post.dart';
 import '../../providers/post/post_provider.dart';
 import '../../services/firebase_service.dart';
 
