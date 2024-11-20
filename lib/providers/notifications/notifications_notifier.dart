@@ -17,7 +17,6 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
 
   // Firebase에서 실시간으로 알림 데이터 가져오기
   void _subscribeToNotificationCollection() async {
-    print('=============데이터 불러오기 시작');
     state = state.copyWith(isLoading: true);
 
     final currentUserUid = FirebaseService().getCurrentUserUid();
@@ -26,7 +25,6 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         isLoading: false,
         error: 'Current user UID is null',
       );
-      print("Current user UID is null");
       return;
     }
 
@@ -36,29 +34,15 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         .snapshots()
         .listen(
       (snapshot) {
-        print('=============데이터 스냅샷 수신 for UID: $currentUserUid');
-
         // 전체 데이터 구조 확인
         final data = snapshot.data();
-        print('전체 Firestore 데이터: $data');
 
         final List<dynamic> messages = data?['messages'] ?? [];
-        print('메시지 배열: $messages');
+        print('messages: $messages');
 
         final newNotifications = messages.map((message) {
-          print('\n=== 개별 알림 메시지 처리 ===');
-          print('메시지 전체 데이터: $message');
-          print('메시지 타입: ${message.runtimeType}');
-
-          // 각 필드 개별 출력
-          print('postId: ${message['postId']}');
-          print('type: ${message['type']}');
-          print('body: ${message['body']}');
-          print('user: ${message['user']}');
-          print('========================\n');
-
           // null 체크 및 기본값 설정
-          final postId = message['postId']?.toString() ?? '';
+          final postId = message['postid']?.toString() ?? '';
           if (postId.isEmpty) {
             print('경고: 알림에서 빈 postId 발견');
             print('해당 메시지 전체 내용: $message');
@@ -74,16 +58,6 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
               user: message['user']?.toString() ?? '',
               comment: message['comment']?.toString() ?? '');
         }).toList();
-
-        print("\n=== 처리된 알림 요약 ===");
-        print('총 알림 수: ${newNotifications.length}');
-        for (var notification in newNotifications) {
-          print('알림 정보:');
-          print('  postId: ${notification.postId}');
-          print('  type: ${notification.type}');
-          print('  user: ${notification.user}');
-        }
-        print("========================\n");
 
         state = state.copyWith(
           notifications: newNotifications,
