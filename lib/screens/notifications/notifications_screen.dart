@@ -7,7 +7,8 @@ class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
@@ -18,8 +19,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     // 로딩 중일 때 화면
     if (notificationsState.isLoading) {
       return Scaffold(
-        appBar:  AppBar(
-          title: const Text('Notifications', style: TextStyle(fontWeight: FontWeight.bold)),
+        appBar: AppBar(
+          title: const Text('Notifications',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           centerTitle: true,
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -29,28 +31,35 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     // 에러가 있을 때 화면
     if (notificationsState.error != null) {
       return Scaffold(
-        appBar:  AppBar(
-          title: const Text('Notifications', style: TextStyle(fontWeight: FontWeight.bold)),
+        appBar: AppBar(
+          title: const Text('Notifications',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           centerTitle: true,
         ),
-        body: Center(child: Text(notificationsState.error!,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 30))),
+        body: Center(
+            child: Text(notificationsState.error!,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30))),
       );
     }
 
     // 알림이 없을 때 화면
     if (notificationsState.notifications!.isEmpty) {
       return Scaffold(
-        appBar:  AppBar(
-          title: const Text('Notifications', style: TextStyle(fontWeight: FontWeight.bold)),
+        appBar: AppBar(
+          title: const Text('Notifications',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           centerTitle: true,
         ),
-        body: const Center(child: Text('No notifications available',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 30))),
+        body: const Center(
+            child: Text('No notifications available',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30))),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Notifications',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: ListView.builder(
@@ -63,6 +72,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             body: notification.body,
             date: notification.date,
             time: notification.time,
+            user: notification.user,
+            comment: notification.comment,
           );
         },
       ),

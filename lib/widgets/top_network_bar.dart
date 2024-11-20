@@ -47,17 +47,19 @@ class _TopNetworkBarState extends State<TopNetworkBar> {
       top: widget.topPosition,
       left: 0,
       right: 0,
-      child: Material(
-        color: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical:60,horizontal: 10),
-          child: Container(
-            color: Colors.red.withOpacity(0.8),
-            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-            child: Center(
-              child: Text(
-                widget.message,
-                style: TextStyle(color: Colors.white, fontSize: 16),
+      child: IgnorePointer(
+        child: Material(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical:60,horizontal: 10),
+            child: Container(
+              color: Colors.red.withOpacity(0.8),
+              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+              child: Center(
+                child: Text(
+                  widget.message,
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
               ),
             ),
           ),

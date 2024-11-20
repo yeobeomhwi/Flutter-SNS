@@ -49,6 +49,8 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
             time: message['time'] ?? '',
             title: message['title'] ?? '',
             type: message['type'] ?? '',
+            user: message['user'] ?? '',
+            comment: message['comment'] ?? ''
           );
         }).toList();
 

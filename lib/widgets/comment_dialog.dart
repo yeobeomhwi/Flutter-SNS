@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -106,13 +105,18 @@ class _CommentDialogState extends ConsumerState<CommentDialog> {
       itemCount: comments.length,
       itemBuilder: (context, index) {
         final comment = comments[index];
-        return _CommentItem(
-          comment: comment,
-          currentUserId: currentUser?.uid,
-          onDelete: () => ref.read(postProvider.notifier).deleteComment(
-                postId: widget.postId,
-                commentId: comment['commentId'],
-              ),
+        return Column(
+          children: [
+            _CommentItem(
+              comment: comment,
+              currentUserId: currentUser?.uid,
+              onDelete: () => ref.read(postProvider.notifier).deleteComment(
+                    postId: widget.postId,
+                    commentId: comment['commentId'],
+                  ),
+            ),
+            Divider()
+          ],
         );
       },
     );
@@ -153,8 +157,7 @@ class _CommentDialogState extends ConsumerState<CommentDialog> {
     );
   }
 }
-
-class _CommentItem extends StatelessWidget {
+class _CommentItem extends StatefulWidget {
   final Map<String, dynamic> comment;
   final String? currentUserId;
   final VoidCallback onDelete;
@@ -166,89 +169,83 @@ class _CommentItem extends StatelessWidget {
   });
 
   @override
+  _CommentItemState createState() => _CommentItemState();
+}
+
+class _CommentItemState extends State<_CommentItem> {
+  @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: _buildAvatar(),
-      title: Text(
-        comment['userName'] ?? '익명',
-        style: const TextStyle(fontWeight: FontWeight.bold),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Text(comment['comment']),
-          ),
-          Text(
-            comment['timestamp'] != null
-                ? _formatCommentTime(comment['timestamp'])
-                : '',
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
-          ),
-        ],
-      ),
-      trailing: comment['userId'] == currentUserId
-          ? IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('댓글 삭제'),
-                    content: const Text('이 댓글을 삭제하시겠습니까?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('취소'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          onDelete();
-                          Navigator.pop(context);
-                        },
-                        child: const Text('삭제'),
-                      ),
-                    ],
+    return GestureDetector(
+      onLongPress: () {
+        if (widget.comment['userId'] == widget.currentUserId) {
+          _showDeleteDialog(context);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: Colors.white, // 눌렀을 때 색상 변경
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Row to display user name and time
+            Row(
+              children: [
+                Text(
+                  widget.comment['userName'] ?? 'User', // If userName is null, fallback to 'User'
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16
                   ),
-                );
-              },
-            )
-          : null,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  widget.comment['createdAt'] != null
+                      ? _formatCommentTime(widget.comment['createdAt'])
+                      : '시간 정보 없음', // If timestamp is null, show '시간 정보 없음'
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8.0), // Add space between name+time and the comment content
+            // Comment content text
+            Text(
+              widget.comment['comment'] ?? '댓글 내용 없음', // If comment is null, fallback to '댓글 내용 없음'
+              style: const TextStyle(fontSize: 14),
+              softWrap: true, // 자동 줄바꿈 활성화
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildAvatar() {
-    final User? currentUser = FirebaseAuth.instance.currentUser;
-
-    return CircleAvatar(
-      backgroundColor: Colors.grey[200],
-      child: currentUser?.photoURL?.isNotEmpty == true
-          ? ClipOval(
-              child: Image.network(
-                currentUser!.photoURL!,
-                width: 40,
-                height: 40,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.person, color: Colors.grey);
-                },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return const Center(
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  );
-                },
-              ),
-            )
-          : const Icon(Icons.person, color: Colors.grey),
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('댓글 삭제'),
+        content: const Text('이 댓글을 삭제하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              widget.onDelete();
+              Navigator.pop(context);
+            },
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
     );
   }
 

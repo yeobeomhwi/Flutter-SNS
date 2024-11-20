@@ -3,18 +3,22 @@ import 'dart:convert';
 class Notification {
   final String body;
   final String date;
+  final String user;
+  final String comment;
   final String postId;
   final String time;
   final String title;
   final String type;
-  Notification({
-    required this.body,
-    required this.date,
-    required this.postId,
-    required this.time,
-    required this.title,
-    required this.type,
-  });
+
+  Notification(
+      {required this.body,
+      required this.date,
+      required this.postId,
+      required this.time,
+      required this.title,
+      required this.type,
+      required this.user,
+      this.comment = ""});
 
   Notification copyWith({
     String? body,
@@ -23,15 +27,18 @@ class Notification {
     String? time,
     String? title,
     String? type,
+    String? user,
+    String? comment,
   }) {
     return Notification(
-      body: body ?? this.body,
-      date: date ?? this.date,
-      postId: postId ?? this.postId,
-      time: time ?? this.time,
-      title: title ?? this.title,
-      type: type ?? this.type,
-    );
+        body: body ?? this.body,
+        date: date ?? this.date,
+        postId: postId ?? this.postId,
+        time: time ?? this.time,
+        title: title ?? this.title,
+        type: type ?? this.type,
+        user: user ?? this.user,
+        comment: comment ?? this.comment);
   }
 
   Map<String, dynamic> toMap() {
@@ -43,6 +50,8 @@ class Notification {
     result.addAll({'time': time});
     result.addAll({'title': title});
     result.addAll({'type': type});
+    result.addAll({'user': user});
+    result.addAll({'comment': comment});
 
     return result;
   }
@@ -55,6 +64,8 @@ class Notification {
       time: map['time'] ?? '',
       title: map['title'] ?? '',
       type: map['type'] ?? '',
+      user: map['user'] ?? '',
+      comment:  map['comment'] ?? '',
     );
   }
 
@@ -65,7 +76,7 @@ class Notification {
 
   @override
   String toString() {
-    return 'NotificationMessage(body: $body, date: $date, postId: $postId, time: $time, title: $title, type: $type)';
+    return 'NotificationMessage(body: $body, date: $date, postId: $postId, time: $time, title: $title, type: $type, user: $user, comment: $comment)';
   }
 
   @override
