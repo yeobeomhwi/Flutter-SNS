@@ -11,10 +11,12 @@ import '../services/firebase_service.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final Post post;
+  final bool hideCommentButton;
 
   const PostCard({
     super.key,
     required this.post,
+    this.hideCommentButton = false,
   });
 
   @override
@@ -185,7 +187,7 @@ class _PostCardState extends ConsumerState<PostCard> {
                   width: double.infinity,
                   height: 300,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Center(
+                  placeholder: (context, url) => const Center(
                     child: CircularProgressIndicator(),
                   ),
                   errorWidget: (context, url, error) => const Center(
@@ -227,23 +229,23 @@ class _PostCardState extends ConsumerState<PostCard> {
               ),
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  toggleLike(widget.post.postId);
-                },
-                icon: Icon(
-                  Icons.favorite,
-                  color: likes.contains(currentUserUid) ? Colors.red : null,
-                ),
+        Row(
+          children: [
+            IconButton(
+              onPressed: () {
+                toggleLike(widget.post.postId);
+              },
+              icon: Icon(
+                Icons.favorite,
+                color: likes.contains(currentUserUid) ? Colors.red : null,
               ),
-              Row(
-                children: [
+            ),
+            Row(
+              children: [
+                if (!widget.hideCommentButton)
                   IconButton(
                     onPressed: () {
+                      // 댓글 모달 표시
                       showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
@@ -254,18 +256,17 @@ class _PostCardState extends ConsumerState<PostCard> {
                     },
                     icon: const Icon(Icons.comment_outlined),
                   ),
-                  Text(
-                    widget.post.comments.length.toString(),
-                    style: const TextStyle(
-                      color: Colors.black54,
-                      fontSize: 14,
-                    ),
+                Text(
+                  widget.post.comments.length.toString(),
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 14,
                   ),
-                  const SizedBox(width: 8),
-                ],
-              ),
-            ],
-          ),
+                ),
+                const SizedBox(width: 8),
+              ],
+            ),
+          ],
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
