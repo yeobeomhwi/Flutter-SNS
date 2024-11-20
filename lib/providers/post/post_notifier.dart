@@ -9,10 +9,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../network/network_providers.dart';
+
 class PostNotifier extends StateNotifier<PostState> {
   final FirebaseFirestore _firestore;
+  final Ref ref; // Add reference to the provider
 
-  PostNotifier(this._firestore) : super(PostState(posts: [])) {
+  PostNotifier(this._firestore, this.ref) : super(PostState(posts: [])) {
     _enableOfflineMode(); // 오프라인 모드 활성화
     _monitorConnectionStatus(); // Firestore 동기화 상태 모니터링
   }
@@ -54,7 +57,7 @@ class PostNotifier extends StateNotifier<PostState> {
           profileImage: data['profileImage'] as String,
           imageUrls: List<String>.from(data['imageUrls'] as List),
           caption: data['caption'] as String,
-          createdAt: (data['createdAt'] as Timestamp).toDate(),
+          createdAt: (data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now()),
           likes: List<String>.from(data['likes'] as List),
           comments: List<Map<String, dynamic>>.from(data['comments'] as List),
           isSynced: false,
@@ -78,7 +81,7 @@ class PostNotifier extends StateNotifier<PostState> {
         .orderBy('createdAt', descending: true) // 작성 시간 기준 내림차순 정렬
         .snapshots()
         .listen(
-      (snapshot) {
+          (snapshot) {
         // Firestore 문서를 Post 모델로 변환하여 상태 업데이트
         final posts = snapshot.docs.map((doc) {
           final data = doc.data();
@@ -89,7 +92,9 @@ class PostNotifier extends StateNotifier<PostState> {
             profileImage: data['profileImage'] as String,
             imageUrls: List<String>.from(data['imageUrls'] as List),
             caption: data['caption'] as String,
-            createdAt: (data['createdAt'] as Timestamp).toDate(),
+            createdAt: data['createdAt'] != null
+                ? (data['createdAt'] as Timestamp).toDate()
+                : DateTime.now(), // null인 경우 현재 시간 사용
             likes: List<String>.from(data['likes'] as List),
             comments: List<Map<String, dynamic>>.from(data['comments'] as List),
             isSynced: true,
@@ -118,8 +123,9 @@ class PostNotifier extends StateNotifier<PostState> {
     required List<String> imageUrls,
     required String postId,
   }) async {
+    print('================================1');
     try {
-            // Firestore에 저장할 데이터
+      // Firestore에 저장할 데이터
       final newPost = {
         'postId': postId, // 게시물 ID
         'userId': userId, // 작성자 ID
@@ -130,18 +136,54 @@ class PostNotifier extends StateNotifier<PostState> {
         'isSynced': false, // 동기화 여부는 오프라인이므로 false
         'createdAt': createdAt ?? FieldValue.serverTimestamp(),
         'likes': likes, // 좋아요 리스트
-        'comments': comments, // 댓글 리스트
+        'comments': <Map<String, dynamic>>[], // 빈 댓글 리스트로 초기화
       };
+      print('=====================================================2');
+      final currentPosts = state.posts;
+      final updatedPost = Post(
+        postId: postId,
+        userId: userId,
+        userName: userName,
+        profileImage: profileImage,
+        imageUrls: imageUrls,
+        caption: caption,
+        createdAt: createdAt ?? FieldValue.serverTimestamp(),
+        likes: likes,
+        comments: [],
+        isSynced: false,
+      );
+      final updatedPosts = List<Post>.from(currentPosts)..add(updatedPost);
+      state = state.copyWith(posts: updatedPosts);
 
+      print('=====================================================3');
+      print('================${state.posts.toString()}');
+      print('=========추가완료===========');
       // Firestore에 오프라인 상태로 저장
-      await FirebaseFirestore.instance
-          .collection('posts')
-          .doc(postId)
-          .set(newPost);
+      await _firestore.collection('posts').doc(postId).set(newPost);
 
+      // 네트워크가 연결되면 Firestorage에 이미지를 업로드하고 URL을 업데이트
+      if (ref.read(connectionStateProvider).isOnline) {
+        // 업로드할 이미지가 있다면 Firestorage에 업로드
+        List<String> updatedImageUrls = [];
 
+        for (String imageUrl in imageUrls) {
+          String fileName = 'images/$postId/${Uri.parse(imageUrl).pathSegments.last}';
+          final storageRef = FirebaseStorage.instance.ref().child(fileName);
 
+          // 이미지 파일을 업로드
+          final uploadTask = storageRef.putFile(File(imageUrl)); // imageUrl이 파일 경로일 때
+          final downloadUrl = await (await uploadTask).ref.getDownloadURL();
 
+          updatedImageUrls.add(downloadUrl);
+        }
+
+        // Firestore에서 imageUrls 업데이트
+        await FirebaseFirestore.instance.collection('posts').doc(postId).update({
+          'imageUrls': updatedImageUrls,
+          'isSynced': true, // 동기화 완료
+        });
+        print('이미지 URL 업데이트 완료');
+      }
     } catch (e) {
       print("게시물 추가 중 오류 발생: $e");
     }
@@ -165,7 +207,7 @@ class PostNotifier extends StateNotifier<PostState> {
     }
   }
 
-// Firebase Storage에 이미지 업로드
+  // Firebase Storage에 이미지 업로드
   Future<String> uploadImageToStorage(
       File imageFile, String postId, int index) async {
     try {

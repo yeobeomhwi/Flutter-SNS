@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:app_team2/widgets/post_card.dart';
 import 'package:app_team2/widgets/top_network_bar.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,7 +23,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
-  late bool network;
 
   @override
   void initState() {
@@ -33,7 +31,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     initConnectivity();
-    FCMtoken();
   }
 
   @override
@@ -41,11 +38,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // 스트림 리스너 해제
     _connectivitySubscription.cancel();
     super.dispose();
-  }
-
-  Future<void> FCMtoken() async {
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    print('=========fcmToken: $fcmToken');
   }
 
   // 초기 연결 상태 확인
@@ -95,7 +87,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // 새로고침 시 데이터 재로딩
   Future<void> _onRefresh() async {
     // 네트워크 상태 확인 후 데이터를 다시 로드
-    if (network) {
+    final isOnline = ref.read(connectionStateProvider.notifier).state.isOnline;
+
+    if (isOnline) {
       // 네트워크가 연결되어 있으면 최신 데이터를 가져옵니다.
       ref.read(postProvider.notifier).subscribeToPostsCollection();
     } else {
@@ -132,21 +126,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: postState.isLoading
             ? const Center(child: CircularProgressIndicator()) // 로딩 중일 때 인디케이터
             : postState.error != null
-                ? Center(child: Text('오류 발생: ${postState.error}')) // 오류 메시지
-                : postState.posts.isEmpty
-                    ? const Center(child: Text('포스트가 없습니다.')) // 포스트가 없을 때 메시지
-                    : Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 0, horizontal: 8.0),
-                        child: ListView.builder(
-                          itemCount: postState.posts.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return PostCard(
-                              post: postState.posts[index],
-                            );
-                          },
-                        ),
-                      ),
+            ? Center(
+          child: GestureDetector(
+            onTap: _onRefresh, // 오류 메시지를 탭하면 새로고침
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('오류 발생: ${postState.error}'), // 오류 메시지
+                const SizedBox(height: 8),
+                const Text('새로고침하려면 탭하세요.'), // 새로고침 안내 메시지
+              ],
+            ),
+          ),
+        )
+            : postState.posts.isEmpty
+            ? const Center(child: Text('포스트가 없습니다.')) // 포스트가 없을 때 메시지
+            : Padding(
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8.0),
+          child: ListView.builder(
+            itemCount: postState.posts.length,
+            itemBuilder: (BuildContext context, int index) {
+              return PostCard(
+                post: postState.posts[index],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
