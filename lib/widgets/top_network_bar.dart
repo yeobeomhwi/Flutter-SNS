@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 
 class TopNetworkBar extends StatefulWidget {
   final String message;
@@ -8,19 +7,17 @@ class TopNetworkBar extends StatefulWidget {
   const TopNetworkBar({
     Key? key,
     required this.message,
-    this.topPosition = 50.0, // Default top position is 50px from top
+    this.topPosition = 50.0,
   }) : super(key: key);
 
   @override
   _TopNetworkBarState createState() => _TopNetworkBarState();
 
-  static OverlayEntry? _overlayEntry; // Holds the OverlayEntry instance
+  static OverlayEntry? _overlayEntry;
 
-  // Method to display the TopNetworkBar
   static void on(BuildContext context, {double topPosition = 50.0}) {
-    final overlay = Overlay.of(context); // Get the overlay using context
+    final overlay = Overlay.of(context);
     if (overlay != null) {
-      // If an entry is already present, remove it first before adding a new one
       off();
 
       _overlayEntry = OverlayEntry(
@@ -30,15 +27,15 @@ class TopNetworkBar extends StatefulWidget {
         ),
       );
 
-      overlay.insert(_overlayEntry!); // Insert the overlay
+      overlay.insert(_overlayEntry!);
     }
   }
 
-  // Method to hide the TopNetworkBar
+
   static void off() {
     if (_overlayEntry != null) {
-      _overlayEntry?.remove(); // Removes the OverlayEntry
-      _overlayEntry = null; // Reset the OverlayEntry to null
+      _overlayEntry?.remove();
+      _overlayEntry = null;
     }
   }
 }
@@ -47,18 +44,23 @@ class _TopNetworkBarState extends State<TopNetworkBar> {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: widget.topPosition, // Position from the top
+      top: widget.topPosition,
       left: 0,
       right: 0,
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          color: Colors.red,
-          padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-          child: Center(
-            child: Text(
-              widget.message,
-              style: TextStyle(color: Colors.white, fontSize: 16),
+      child: IgnorePointer(
+        child: Material(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical:60,horizontal: 10),
+            child: Container(
+              color: Colors.red.withOpacity(0.8),
+              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+              child: Center(
+                child: Text(
+                  widget.message,
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
             ),
           ),
         ),

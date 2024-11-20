@@ -1,3 +1,4 @@
+import 'package:app_team2/screens/notifications/notifications_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/addfeed/create_caption_screen.dart';
@@ -29,6 +30,10 @@ class CustomRouter {
       GoRoute(
         path: '/Signup',
         builder: (context, state) => const SignupScreen(),
+      ),
+      GoRoute(
+        path: '/Notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
     ],
     redirect: (context, state) {

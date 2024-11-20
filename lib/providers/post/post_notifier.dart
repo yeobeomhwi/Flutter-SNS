@@ -1,82 +1,227 @@
-import 'package:app_team2/data/models/post.dart';
-import 'package:app_team2/data/repositories/post_repository.dart';
-import 'package:app_team2/providers/post/post_state.dart';
+import 'dart:async';
+import 'dart:io';
 
+import 'package:app_team2/data/models/post.dart';
+import 'package:app_team2/providers/post/post_state.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 class PostNotifier extends StateNotifier<PostState> {
-  final PostRepository _postRepository;
+  final FirebaseFirestore _firestore;
 
-  PostNotifier(this._postRepository) : super(PostState(posts: [])) {
-    _loadPosts();
+  PostNotifier(this._firestore) : super(PostState(posts: [])) {
+    _enableOfflineMode(); // 오프라인 모드 활성화
+    _monitorConnectionStatus(); // Firestore 동기화 상태 모니터링
   }
 
-  Future<void> _loadPosts() async {
+  StreamSubscription<QuerySnapshot>? _subscription;
+
+  // Firestore 오프라인 모드 설정
+  void _enableOfflineMode() {
+    _firestore.settings = const Settings(
+      persistenceEnabled: true, // 오프라인에서도 데이터 저장 가능
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED, // 캐시 크기 무제한
+    );
+  }
+
+  // Firestore 서버와의 동기화 상태 모니터링
+  void _monitorConnectionStatus() {
+    _firestore.snapshotsInSync().listen((_) {
+      state = state.copyWith(isSyncedWithServer: true); // 동기화 성공
+      print("Firestore가 서버와 동기화되어 있습니다.");
+    }, onError: (error) {
+      state = state.copyWith(isSyncedWithServer: false); // 동기화 실패
+      print("Firestore 동기화 에러: $error");
+    });
+  }
+
+  Future<void> fetchCachedPosts() async {
     try {
-      state = state.copyWith(isLoading: true);
-      final posts = await _postRepository.getAllPosts();
+      final snapshot = await _firestore
+          .collection('posts')
+          .orderBy('createdAt', descending: true)
+          .get(const GetOptions(source: Source.cache)); // 캐시 데이터 사용
+
+      final posts = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return Post(
+          postId: doc.id,
+          userId: data['userId'] as String,
+          userName: data['userName'] as String,
+          profileImage: data['profileImage'] as String,
+          imageUrls: List<String>.from(data['imageUrls'] as List),
+          caption: data['caption'] as String,
+          createdAt: (data['createdAt'] as Timestamp).toDate(),
+          likes: List<String>.from(data['likes'] as List),
+          comments: List<Map<String, dynamic>>.from(data['comments'] as List),
+          isSynced: false,
+        );
+      }).toList();
+
       state = state.copyWith(posts: posts, isLoading: false);
     } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+      print('=========에러 : $e');
+      state = state.copyWith(
+          error: "캐시 데이터 로드 실패: ${e.toString()}", isLoading: false);
     }
   }
 
+  // Firestore 'posts' 컬렉션을 실시간으로 구독
+  void subscribeToPostsCollection() {
+    state = state.copyWith(isLoading: true); // 로딩 상태로 변경
+
+    _subscription = _firestore
+        .collection('posts')
+        .orderBy('createdAt', descending: true) // 작성 시간 기준 내림차순 정렬
+        .snapshots()
+        .listen(
+      (snapshot) {
+        // Firestore 문서를 Post 모델로 변환하여 상태 업데이트
+        final posts = snapshot.docs.map((doc) {
+          final data = doc.data();
+          return Post(
+            postId: doc.id,
+            userId: data['userId'] as String,
+            userName: data['userName'] as String,
+            profileImage: data['profileImage'] as String,
+            imageUrls: List<String>.from(data['imageUrls'] as List),
+            caption: data['caption'] as String,
+            createdAt: (data['createdAt'] as Timestamp).toDate(),
+            likes: List<String>.from(data['likes'] as List),
+            comments: List<Map<String, dynamic>>.from(data['comments'] as List),
+            isSynced: true,
+          );
+        }).toList();
+
+        state = state.copyWith(posts: posts, isLoading: false); // 상태 업데이트
+      },
+      onError: (error) {
+        state =
+            state.copyWith(error: error.toString(), isLoading: false); // 오류 처리
+      },
+    );
+  }
+
+  // 게시물 추가 함수
   Future<void> addPost({
     required String userId,
     required String userName,
     required String profileImage,
-    required List<String> imagePaths,
     required String caption,
+    required bool isSynced,
+    required FieldValue createdAt,
+    required List<String> likes,
+    required List<String> comments,
+    required List<String> imageUrls,
+    required String postId,
   }) async {
     try {
-      final newPost = Post(
-        postId: DateTime.now().millisecondsSinceEpoch.toString(), // 고유 ID 생성
-        userId: userId,
-        userName: userName,
-        profileImage: profileImage,
-        imagePaths: imagePaths,
-        caption: caption,
-        createdAt: DateTime.now(),
-        likes: [],
-        comments: [],
-      );
+            // Firestore에 저장할 데이터
+      final newPost = {
+        'postId': postId, // 게시물 ID
+        'userId': userId, // 작성자 ID
+        'userName': userName, // 작성자 이름
+        'profileImage': profileImage, // 작성자 프로필 이미지
+        'imageUrls': imageUrls,
+        'caption': caption, // 게시물 내용
+        'isSynced': false, // 동기화 여부는 오프라인이므로 false
+        'createdAt': createdAt ?? FieldValue.serverTimestamp(),
+        'likes': likes, // 좋아요 리스트
+        'comments': comments, // 댓글 리스트
+      };
 
-      await _postRepository.savePost(newPost);
-      await _loadPosts(); // 포스트 목록 새로고침
+      // Firestore에 오프라인 상태로 저장
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .set(newPost);
+
+
+
+
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      print("게시물 추가 중 오류 발생: $e");
     }
   }
 
+  // 임시 저장 경로에 이미지 저장
+  Future<String> saveImageLocally(
+      File imageFile, String postId, int index) async {
+    try {
+      // 로컬 경로 얻기
+      final directory = await getTemporaryDirectory();
+      final localPath = '${directory.path}/${postId}_{$index}.jpg';
+
+      // 로컬 파일로 저장
+      await imageFile.copy(localPath);
+
+      return localPath;
+    } catch (e) {
+      print("로컬 저장 중 오류 발생: $e");
+      rethrow;
+    }
+  }
+
+// Firebase Storage에 이미지 업로드
+  Future<String> uploadImageToStorage(
+      File imageFile, String postId, int index) async {
+    try {
+      // Firebase Storage 경로 정의
+      final path = 'post_images/${postId}_{$index}.jpg';
+      final storageRef = FirebaseStorage.instance.ref().child(path);
+
+      // Firebase Storage에 이미지 업로드
+      final uploadTask = storageRef.putFile(imageFile);
+      final snapshot = await uploadTask.whenComplete(() {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print("이미지 업로드 중 오류 발생: $e");
+      rethrow;
+    }
+  }
+
+
+  // 게시물 삭제
   Future<void> deletePost(String postId) async {
     try {
-      await _postRepository.deletePost(postId);
-      await _loadPosts();
+      await _firestore
+          .collection('posts')
+          .doc(postId)
+          .delete(); // Firestore에서 게시물 삭제
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: e.toString()); // 오류 처리
     }
   }
 
+  // 게시물 좋아요 추가/제거
   Future<void> likePost(String postId, String userId) async {
     try {
-      final post = await _postRepository.getPostById(postId);
-      if (post == null) return;
+      final postRef = _firestore.collection('posts').doc(postId);
+      final postDoc = await postRef.get();
 
-      List<String> updatedLikes = List.from(post.likes);
-      if (updatedLikes.contains(userId)) {
-        updatedLikes.remove(userId);
+      if (!postDoc.exists) return; // 게시물이 존재하지 않으면 종료
+
+      final likes = List<String>.from(postDoc.data()?['likes'] as List);
+
+      if (likes.contains(userId)) {
+        await postRef.update({
+          'likes': FieldValue.arrayRemove([userId]) // 좋아요 제거
+        });
       } else {
-        updatedLikes.add(userId);
+        await postRef.update({
+          'likes': FieldValue.arrayUnion([userId]) // 좋아요 추가
+        });
       }
-
-      final updatedPost = post.copyWith(likes: updatedLikes);
-      await _postRepository.updatePost(updatedPost);
-      await _loadPosts();
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: e.toString()); // 오류 처리
     }
   }
 
+  // 댓글 추가
   Future<void> addComment({
     required String postId,
     required String userId,
@@ -84,45 +229,50 @@ class PostNotifier extends StateNotifier<PostState> {
     required String comment,
   }) async {
     try {
-      final post = await _postRepository.getPostById(postId);
-      if (post == null) return;
-
+      final now = DateTime.now();
       final commentData = {
-        'commentId': DateTime.now().millisecondsSinceEpoch.toString(),
-        'userId': userId,
-        'userName': userName,
-        'comment': comment,
-        'createdAt': DateTime.now().toIso8601String(),
+        'commentId': now.millisecondsSinceEpoch.toString(), // 고유 댓글 ID
+        'userId': userId, // 댓글 작성자 ID
+        'userName': userName, // 댓글 작성자 이름
+        'comment': comment, // 댓글 내용
+        'createdAt': Timestamp.fromDate(now), // 작성 시간
       };
 
-      List<Map<String, dynamic>> updatedComments = List.from(post.comments);
-      updatedComments.add(commentData);
-
-      final updatedPost = post.copyWith(comments: updatedComments);
-      await _postRepository.updatePost(updatedPost);
-      await _loadPosts();
+      await _firestore.collection('posts').doc(postId).update({
+        'comments': FieldValue.arrayUnion([commentData]) // 댓글 추가
+      });
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: e.toString()); // 오류 처리
     }
   }
 
+  // 댓글 삭제
   Future<void> deleteComment({
     required String postId,
     required String commentId,
   }) async {
     try {
-      final post = await _postRepository.getPostById(postId);
-      if (post == null) return;
+      final docSnapshot =
+          await _firestore.collection('posts').doc(postId).get(); // 게시물 가져오기
+      final comments = List<Map<String, dynamic>>.from(
+          docSnapshot.data()?['comments'] ?? []); // 현재 댓글 목록 가져오기
 
-      List<Map<String, dynamic>> updatedComments = List.from(post.comments);
-      updatedComments
-          .removeWhere((comment) => comment['commentId'] == commentId);
+      comments
+          .removeWhere((comment) => comment['commentId'] == commentId); // 댓글 제거
 
-      final updatedPost = post.copyWith(comments: updatedComments);
-      await _postRepository.updatePost(updatedPost);
-      await _loadPosts();
+      await _firestore
+          .collection('posts')
+          .doc(postId)
+          .update({'comments': comments}); // 업데이트된 댓글 저장
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: e.toString()); // 오류 처리
     }
+  }
+
+  // 리소스 해제
+  @override
+  void dispose() {
+    _subscription?.cancel(); // Firestore 구독 취소
+    super.dispose();
   }
 }

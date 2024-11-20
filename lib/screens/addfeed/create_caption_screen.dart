@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:app_team2/providers/post/picked_images_provider.dart';
-import 'package:app_team2/providers/post/post_provider.dart';
-import 'package:app_team2/providers/profile/profile_proivder.dart';
-import 'package:app_team2/services/firebase_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../data/models/post.dart';
+import '../../providers/post/post_provider.dart';
+import '../../services/firebase_service.dart';
 
 class CreateCaptionScreen extends ConsumerStatefulWidget {
   const CreateCaptionScreen({super.key});
@@ -17,7 +19,8 @@ class CreateCaptionScreen extends ConsumerStatefulWidget {
 
 class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   final TextEditingController _captionController = TextEditingController();
-  bool _isLoading = false;
+  final FirebaseService firebaseService = FirebaseService();
+  bool _isLoading = false; // 로딩 상태 변수 추가
 
   @override
   void dispose() {
@@ -28,8 +31,8 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   @override
   Widget build(BuildContext context) {
     final pickedImages = ref.watch(pickedImagesProvider);
-    final List<String> imagePaths =
-        pickedImages.map((xFile) => xFile.path).toList();
+    final List<File> imagePaths =
+        pickedImages.map((xFile) => File(xFile.path)).toList();
 
     return GestureDetector(
       onTap: () {
@@ -81,83 +84,59 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                             _isLoading = true; // 로딩 시작
                           });
 
+                          final userId = firebaseService.getCurrentUserUid();
                           try {
-                            // Firebase에서 현재 로그인한 사용자의 uid 가져오기
-                            final firebaseUser =
-                                FirebaseService().getCurrentUser();
-                            if (firebaseUser == null) {
-                              throw Exception('로그인된 사용자가 없습니다');
-                            }
+                            final postId = '${userId}_'
+                                '${DateTime.now().millisecondsSinceEpoch}';
 
-                            // 먼저 온라인으로 데이터를 가져오기 시도
-                            await ref
-                                .read(profileProvider.notifier)
-                                .loadUserDataOnline(firebaseUser.uid);
+                            // 프로필 이미지 가져오기
+                            final profileImage =
+                                firebaseService.getCurrentUser()!.photoURL ??
+                                    '';
 
-                            // 온라인 로드가 실패하면 오프라인 데이터 시도
-                            final userState = ref.read(profileProvider);
-                            if (userState.error != null) {
-                              await ref
-                                  .read(profileProvider.notifier)
-                                  .loadUserDataOffline(firebaseUser.uid);
-                            }
+                            // 로컬에 게시물 추가
+                            ref.read(postNotifierProvider.notifier).addPost(
+                              postId: postId,
+                              userId: userId!,
+                              userName: firebaseService
+                                  .getCurrentUser()!
+                                  .displayName
+                                  .toString(),
+                              caption: _captionController.text,
+                              imageUrls: imagePaths.map((e) => e.path).toList(),
+                              isSynced: false,
+                              profileImage: profileImage,
+                              createdAt: FieldValue.serverTimestamp(),
+                              likes: [],
+                              comments: [],
+                            );
 
-                            // 최종 상태 확인
-                            final finalState = ref.read(profileProvider);
-                            final currentUser = finalState.user;
+                            // 성공 메시지 표시
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('포스트가 성공적으로 작성되었습니다.'),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
 
-                            if (currentUser == null) {
-                              throw Exception('사용자 정보를 불러올 수 없습니다.');
-                            }
-
-                            // PostNotifier를 사용해 포스트 추가
-                            await ref.read(postProvider.notifier).addPost(
-                                  userId: currentUser.uid,
-                                  userName: currentUser.displayName,
-                                  profileImage: currentUser.photoURL,
-                                  imagePaths: imagePaths,
-                                  caption: _captionController.text,
-                                );
-
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('포스트가 성공적으로 저장되었습니다.'),
-                                  duration: Duration(seconds: 1),
-                                ),
-                              );
-                            }
-
-                            // 이미지 초기화
+                            // 이미지 초기화 및 텍스트 필드 비우기
                             ref
                                 .read(pickedImagesProvider.notifier)
                                 .clearImages();
-
-                            // 텍스트 필드 비우기
                             _captionController.clear();
 
                             // 메인 화면으로 이동
-                            if (mounted) {
-                              context.go('/Main');
-                            }
+                            context.go('/Main');
                           } catch (e) {
-                            // 에러 처리
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      '포스트 저장 중 오류가 발생했습니다: ${e.toString()}'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
+                            // 더 구체적인 에러 메시지 처리 가능
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text('오류가 발생했습니다: ${e.toString()}')),
+                            );
                           } finally {
-                            // 로딩 상태 해제
-                            if (mounted) {
-                              setState(() {
-                                _isLoading = false;
-                              });
-                            }
+                            setState(() {
+                              _isLoading = false; // 로딩 종료
+                            });
                           }
                         },
                   style: ElevatedButton.styleFrom(

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:app_team2/widgets/comment_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:app_team2/data/models/post.dart';
@@ -142,10 +143,24 @@ class _PostCardState extends ConsumerState<PostCard> {
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: FileImage(File(widget.post.profileImage)),
-                backgroundColor: Colors.grey,
+              ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: widget.post.profileImage,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.grey,
+                    child: CircularProgressIndicator(),
+                  ),
+                  errorWidget: (context, url, error) => const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.grey,
+                    child:
+                        Icon(Icons.error_outline, size: 24, color: Colors.grey),
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               Text(widget.post.userName),
@@ -161,44 +176,49 @@ class _PostCardState extends ConsumerState<PostCard> {
           height: 300,
           child: PageView.builder(
             controller: _controller,
-            itemCount: widget.post.imagePaths.length,
+            itemCount: widget.post.imageUrls.length,
             itemBuilder: (context, index) {
-              final imagePath = widget.post.imagePaths[index];
-              return FutureBuilder<bool>(
-                future: File(imagePath).exists(), // 파일 존재 여부 확인
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(), // 로딩 인디케이터
-                    );
-                  } else if (snapshot.hasError || !snapshot.data!) {
-                    return const Center(
-                      child: Icon(
-                        Icons.error_outline,
-                        size: 40,
-                        color: Colors.grey,
-                      ),
-                    );
-                  } else {
-                    return Image.file(
-                      File(imagePath),
-                      width: double.infinity,
-                      height: 300,
-                      fit: BoxFit.cover,
-                    );
-                  }
-                },
-              );
+              // URL이 "http"로 시작하면 네트워크 이미지를 사용
+              if (widget.post.imageUrls[index].startsWith('http')) {
+                return CachedNetworkImage(
+                  imageUrl: widget.post.imageUrls[index],
+                  width: double.infinity,
+                  height: 300,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  errorWidget: (context, url, error) => const Center(
+                    child: Icon(
+                      Icons.error_outline,
+                      size: 40,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  cacheKey: widget.post.imageUrls[index],
+                );
+              } else if (widget.post.imageUrls[index].startsWith('/data')) {
+                // URL이 "/data"로 시작하면 로컬 파일에서 이미지 로드
+                return Image.file(
+                  File(widget.post.imageUrls[index]), // 파일에서 로드
+                  width: double.infinity,
+                  height: 300,
+                  fit: BoxFit.cover,
+                );
+              } else {
+                // 다른 경우 처리 (필요에 따라 수정 가능)
+                return const SizedBox.shrink();
+              }
             },
           ),
         ),
-        if (widget.post.imagePaths.length > 1)
+        if (widget.post.imageUrls.length > 1)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Center(
               child: SmoothPageIndicator(
                 controller: _controller,
-                count: widget.post.imagePaths.length,
+                count: widget.post.imageUrls.length,
                 effect: const WormEffect(
                   dotWidth: 8.0,
                   dotHeight: 8.0,
