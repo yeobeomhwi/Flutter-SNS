@@ -5,7 +5,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
 Future<void> requestNotificationPermission() async {
   await Permission.notification.request();
@@ -16,15 +16,14 @@ Future<void> initializeLocalNotifications() async {
   tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
 
   const AndroidInitializationSettings androidInitializationSettings =
-  AndroidInitializationSettings('@mipmap/ic_launcher');
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
   const DarwinInitializationSettings darwinInitializationSettings =
-  DarwinInitializationSettings(
+      DarwinInitializationSettings(
     requestAlertPermission: true,
     requestBadgePermission: true,
     requestSoundPermission: true,
   );
-
 
   const InitializationSettings initializationSettings = InitializationSettings(
     android: androidInitializationSettings,
@@ -43,9 +42,9 @@ Future<void> initializeLocalNotifications() async {
   );
 
   final AndroidFlutterLocalNotificationsPlugin?
-  androidFlutterLocalNotificationsPlugin =
-  flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>();
+      androidFlutterLocalNotificationsPlugin =
+      flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
 
   if (androidFlutterLocalNotificationsPlugin != null) {
     await androidFlutterLocalNotificationsPlugin

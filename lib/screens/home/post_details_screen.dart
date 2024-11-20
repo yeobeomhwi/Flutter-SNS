@@ -11,31 +11,56 @@ class PostDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 게시물 상태 Provider 구독
     final postState = ref.watch(postProvider);
 
-    // postId와 일치하는 post 찾기
-    final post = postState.posts.firstWhere(
-      (post) => post.postId == postId,
-      orElse: () => throw Exception('포스트를 찾을 수 없습니다'),
-    );
+    // 로딩 상태 처리
+    if (postState.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('포스트 상세페이지'),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: PostCard(post: post),
+    try {
+      // postId와 일치하는 post 찾기
+      final post = postState.posts.firstWhere(
+        (post) => post.postId == postId,
+        orElse: () {
+          // 포스트를 찾지 못했을 때 로딩 시도
+          ref.read(postProvider.notifier).loadPost(postId);
+          throw Exception('포스트를 찾을 수 없습니다');
+        },
+      );
+
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('포스트 상세페이지'),
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: PostCard(post: post),
+            ),
+            Expanded(
+              child: Comments(postId: postId),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      // 에러 발생 시 에러 화면 표시
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('포스트 상세페이지'),
+        ),
+        body: const Center(
+          child: Text(
+            '게시물을 불러오는 중입니다...',
+            style: TextStyle(fontSize: 16),
           ),
-          Expanded(
-            child: Comments(postId: postId),
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
   }
 }
 
@@ -157,7 +182,6 @@ class _CommentsState extends ConsumerState<Comments> {
 
   Widget _buildCommentInput(String postId) {
     return Container(
-      color: Colors.white,
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom > 0
             ? MediaQuery.of(context).viewInsets.bottom

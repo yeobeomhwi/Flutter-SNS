@@ -40,6 +40,7 @@ class PostNotifier extends StateNotifier<PostState> {
     });
   }
 
+  // 캐시 데이터 로드
   Future<void> fetchCachedPosts() async {
     try {
       final snapshot = await _firestore
@@ -109,6 +110,30 @@ class PostNotifier extends StateNotifier<PostState> {
             state.copyWith(error: error.toString(), isLoading: false); // 오류 처리
       },
     );
+  }
+
+  // 단일 게시물 불러오기
+  Future<void> loadPost(String postId) async {
+    try {
+      // Firestore에서 해당 postId의 게시물 데이터를 가져오는 로직
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .get();
+
+      if (docSnapshot.exists) {
+        final postData = docSnapshot.data()!;
+        // 기존 posts 리스트에 새로운 post 추가
+        state = state.copyWith(
+          posts: [
+            ...state.posts,
+            Post.fromMap({...postData, 'postId': postId})
+          ],
+        );
+      }
+    } catch (e) {
+      print('Error loading post: $e');
+    }
   }
 
   // 게시물 추가 함수
