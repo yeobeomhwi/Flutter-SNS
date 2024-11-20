@@ -8,24 +8,23 @@ import 'notifications_state.dart';
 class NotificationsNotifier extends StateNotifier<NotificationsState> {
   final FirebaseFirestore _firestore;
 
-  NotificationsNotifier(this._firestore) : super(NotificationsState(notifications: [], isLoading: true)) {
-    _subscribeToNotificationCollection();  // 실시간 데이터 리스너 시작
+  NotificationsNotifier(this._firestore)
+      : super(NotificationsState(notifications: [], isLoading: true)) {
+    _subscribeToNotificationCollection(); // 실시간 데이터 리스너 시작
   }
 
   StreamSubscription<DocumentSnapshot>? _subscription;
 
   // Firebase에서 실시간으로 알림 데이터 가져오기
   void _subscribeToNotificationCollection() async {
-    print('=============데이터 불러오기 시작');
-    state = state.copyWith(isLoading: true); // 초기 로딩 상태 설정
+    state = state.copyWith(isLoading: true);
 
-    final currentUserUid = FirebaseService().getCurrentUserUid(); // 현재 사용자 UID 가져오기
+    final currentUserUid = FirebaseService().getCurrentUserUid();
     if (currentUserUid == null) {
       state = state.copyWith(
         isLoading: false,
         error: 'Current user UID is null',
       );
-      print("Current user UID is null");
       return;
     }
 
@@ -34,42 +33,44 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         .doc(currentUserUid)
         .snapshots()
         .listen(
-          (snapshot) {
-        print('=============데이터 스냅샷 수신 for UID: $currentUserUid');
-
+      (snapshot) {
+        // 전체 데이터 구조 확인
         final data = snapshot.data();
+
         final List<dynamic> messages = data?['messages'] ?? [];
+        print('messages: $messages');
 
         final newNotifications = messages.map((message) {
-          print('=============데이터 수신: $message'); // 데이터 디버깅
+          // null 체크 및 기본값 설정
+          final postId = message['postid']?.toString() ?? '';
+          if (postId.isEmpty) {
+            print('경고: 알림에서 빈 postId 발견');
+            print('해당 메시지 전체 내용: $message');
+          }
+
           return Notification(
-            body: message['body'] ?? '',
-            date: message['date'] ?? '',
-            postId: message['postId'] ?? '',
-            time: message['time'] ?? '',
-            title: message['title'] ?? '',
-            type: message['type'] ?? '',
-            user: message['user'] ?? '',
-            comment: message['comment'] ?? ''
-          );
+              body: message['body']?.toString() ?? '',
+              date: message['date']?.toString() ?? '',
+              postId: postId,
+              time: message['time']?.toString() ?? '',
+              title: message['title']?.toString() ?? '',
+              type: message['type']?.toString() ?? '',
+              user: message['user']?.toString() ?? '',
+              comment: message['comment']?.toString() ?? '');
         }).toList();
 
-        // 데이터가 추가되었음을 알리는 print문
-        print("============New notifications added: ${newNotifications.length}");
-
         state = state.copyWith(
-          notifications: newNotifications, // 전체 상태를 새로 받은 알림으로 갱신
-          isLoading: false, // 로딩 종료
+          notifications: newNotifications,
+          isLoading: false,
         );
       },
       onError: (error) {
+        print("알림 데이터 가져오기 오류: $error");
+        print("오류 세부사항: ${error.toString()}");
         state = state.copyWith(
-          error: error.toString(), // 에러 발생 시 상태 업데이트
-          isLoading: false, // 로딩 종료
+          error: error.toString(),
+          isLoading: false,
         );
-
-        // 에러가 발생했음을 알리는 print문
-        print("Error fetching notifications: $error");
       },
     );
   }
@@ -79,5 +80,38 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   void dispose() {
     _subscription?.cancel(); // 리스너 종료
     super.dispose();
+  }
+
+  void fetchNotifications() {
+    try {
+      final notificationsRef = _firestore.collection('notifications');
+
+      notificationsRef.snapshots().listen((snapshot) {
+        final notifications = snapshot.docs.map((doc) {
+          final data = doc.data();
+          // 디버깅 로그 추가
+          print('=== Notification Data from Firestore ===');
+          print('Document ID: ${doc.id}');
+          print('Data: $data');
+          print('PostId: ${data['postId']}');
+          print('====================================');
+
+          return Notification.fromMap({
+            ...data,
+            'id': doc.id,
+          });
+        }).toList();
+
+        state = state.copyWith(
+          notifications: notifications,
+          isLoading: false,
+        );
+      });
+    } catch (e) {
+      state = state.copyWith(
+        error: e.toString(),
+        isLoading: false,
+      );
+    }
   }
 }

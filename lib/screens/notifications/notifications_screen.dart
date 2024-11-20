@@ -1,3 +1,4 @@
+import 'package:app_team2/screens/home/post_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/notifications/notifications_provider.dart';
@@ -38,7 +39,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ),
         body: Center(
             child: Text(notificationsState.error!,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30))),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 30))),
       );
     }
 
@@ -46,13 +48,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     if (notificationsState.notifications!.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Notifications',
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          title:
+              const Text('알림', style: TextStyle(fontWeight: FontWeight.bold)),
           centerTitle: true,
         ),
         body: const Center(
-            child: Text('No notifications available',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30))),
+            child: Text('알림이 없습니다.', style: TextStyle(fontSize: 20))),
       );
     }
 
@@ -67,16 +68,52 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         itemBuilder: (context, index) {
           final notification = notificationsState.notifications?[index];
 
-          return NotificationCard(
-            type: notification!.type,
-            body: notification.body,
-            date: notification.date,
-            time: notification.time,
-            user: notification.user,
-            comment: notification.comment,
+          // 디버깅을 위한 로그 추가
+          print('=== Notification Debug ===');
+          print('Notification object: $notification');
+          print('PostId: ${notification?.postId}');
+          print('Type: ${notification?.type}');
+          print('========================');
+
+          if (notification == null) {
+            return const SizedBox.shrink();
+          }
+
+          return GestureDetector(
+            onTap: () {
+              if (notification.postId.isNotEmpty) {
+                print(
+                    'Tapped notification with postId: ${notification.postId}');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        PostDetailsScreen(postId: notification.postId),
+                  ),
+                );
+                _logPostId(notification.postId);
+              } else {
+                print('PostId is empty!');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('유효하지 않은 게시물입니다.')),
+                );
+              }
+            },
+            child: NotificationCard(
+              type: notification.type,
+              body: notification.body,
+              date: notification.date,
+              time: notification.time,
+              user: notification.user,
+              comment: notification.comment,
+            ),
           );
         },
       ),
     );
+  }
+
+  void _logPostId(String postId) {
+    print('선택된 포스트 ID: $postId');
   }
 }

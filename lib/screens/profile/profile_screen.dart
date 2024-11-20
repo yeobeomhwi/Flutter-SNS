@@ -65,7 +65,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       // 와이파이나 모바일 네트워크가 연결되었으면
       if (result.contains(ConnectivityResult.wifi) ||
           result.contains(ConnectivityResult.mobile)) {
-        TopNetworkBar.off(); // 상단 네트워크 바 숨김
+        NetworkStatusBar.hide(); // 상단 네트워크 바 숨김
         print('와이파이 또는 모바일 네트워크 연결됨');
         // 네트워크 연결 시 온라인 데이터 로드
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -74,7 +74,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       } else {
         print('인터넷 연결 없음');
         // 네트워크 연결 없음 시 상단에 네트워크 메시지 띄움
-        TopNetworkBar.on(context);
+        NetworkStatusBar.show(context, message: "인터넷 연결 안됨");
         // 오프라인 데이터 로드
         WidgetsBinding.instance.addPostFrameCallback((_) {
           ref.read(profileProvider.notifier).loadUserDataOffline(uid);
@@ -117,7 +117,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       appBar: AppBar(title: const Text('Profile')),
       body: Center(
         child: profileState.isLoading
-            ? Center(child: CircularProgressIndicator()) // 로딩 중 스피너 표시
+            ? const Center(child: CircularProgressIndicator()) // 로딩 중 스피너 표시
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -125,7 +125,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   CircleAvatar(
                     backgroundColor: Colors.grey,
                     backgroundImage: FileImage(
-                      File('${user.photoURL}'),
+                      File(user.photoURL),
                     ),
                     radius: 100.w,
                   ),
@@ -158,7 +158,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   // 구분선
                   Padding(
                     padding: EdgeInsets.all(16.w),
-                    child: Divider(),
+                    child: const Divider(),
                   ),
 
                   // 프로필 사진 변경 버튼

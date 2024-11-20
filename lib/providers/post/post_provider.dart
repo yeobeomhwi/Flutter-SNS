@@ -4,10 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final postProvider = StateNotifierProvider<PostNotifier, PostState>((ref) {
-  return PostNotifier(FirebaseFirestore.instance);
+  return PostNotifier(FirebaseFirestore.instance,ref);
 });
 
 
 final postNotifierProvider = StateNotifierProvider<PostNotifier, PostState>((ref) {
-  return PostNotifier(FirebaseFirestore.instance);
+  return PostNotifier(FirebaseFirestore.instance,ref);
 });

@@ -10,21 +10,21 @@ class NotificationCard extends StatelessWidget {
 
   // 생성자
   const NotificationCard({
-    Key? key,
+    super.key,
     required this.type,
     required this.body,
     required this.date,
     required this.time,
     required this.user,
     required this.comment,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
-        padding: EdgeInsets.all(12), // 카드 내 여백을 추가
+        padding: const EdgeInsets.all(12), // 카드 내 여백을 추가
         decoration: BoxDecoration(
           color: Colors.white, // 배경색을 흰색으로 설정
           borderRadius: BorderRadius.circular(8), // 둥근 모서리
@@ -33,7 +33,7 @@ class NotificationCard extends StatelessWidget {
               color: Colors.grey.withOpacity(0.2), // 그림자 효과
               spreadRadius: 2,
               blurRadius: 4,
-              offset: Offset(0, 2), // 그림자 위치
+              offset: const Offset(0, 2), // 그림자 위치
             ),
           ],
         ),
@@ -50,7 +50,7 @@ class NotificationCard extends StatelessWidget {
                 size: 30, // 아이콘 크기 설정
               ),
             ),
-            SizedBox(width: 16), // 아이콘과 텍스트 간 간격 조정
+            const SizedBox(width: 16), // 아이콘과 텍스트 간 간격 조정
             Expanded(
               // 텍스트 영역을 확장하여 여백이 생기지 않게 함
               child: Column(
@@ -60,7 +60,7 @@ class NotificationCard extends StatelessWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: '$user', // 사용자 이름 부분
+                          text: user, // 사용자 이름 부분
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold, // 굵게 설정

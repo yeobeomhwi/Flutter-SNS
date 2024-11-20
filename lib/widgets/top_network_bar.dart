@@ -1,64 +1,79 @@
 import 'package:flutter/material.dart';
 
-class TopNetworkBar extends StatefulWidget {
-  final String message;
-  final double topPosition;
-
-  const TopNetworkBar({
-    Key? key,
-    required this.message,
-    this.topPosition = 50.0,
-  }) : super(key: key);
-
-  @override
-  _TopNetworkBarState createState() => _TopNetworkBarState();
-
+class NetworkStatusBar {
   static OverlayEntry? _overlayEntry;
 
-  static void on(BuildContext context, {double topPosition = 50.0}) {
+  // 싱글톤 패턴을 위한 private 생성자
+  NetworkStatusBar._();
+
+  // 상수 값들을 static const로 분리
+  static const double defaultTopPosition = 50.0;
+  static const double defaultVerticalPadding = 60.0;
+  static const double defaultHorizontalPadding = 10.0;
+  static const double defaultFontSize = 16.0;
+
+  static void show(
+    BuildContext context, {
+    String message = "인터넷 연결 안됨",
+    double topPosition = defaultTopPosition,
+  }) {
+    hide(); // 기존 오버레이가 있다면 제거
+
     final overlay = Overlay.of(context);
-    if (overlay != null) {
-      off();
 
-      _overlayEntry = OverlayEntry(
-        builder: (context) => TopNetworkBar(
-          message: "인터넷 연결 안됨",
-          topPosition: topPosition,
-        ),
-      );
+    _overlayEntry = OverlayEntry(
+      builder: (context) => _NetworkStatusBarView(
+        message: message,
+        topPosition: topPosition,
+      ),
+    );
 
-      overlay.insert(_overlayEntry!);
-    }
+    overlay.insert(_overlayEntry!);
   }
 
-
-  static void off() {
-    if (_overlayEntry != null) {
-      _overlayEntry?.remove();
-      _overlayEntry = null;
-    }
+  static void hide() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
   }
 }
 
-class _TopNetworkBarState extends State<TopNetworkBar> {
+class _NetworkStatusBarView extends StatelessWidget {
+  final String message;
+  final double topPosition;
+
+  const _NetworkStatusBarView({
+    super.key,
+    required this.message,
+    required this.topPosition,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      top: widget.topPosition,
+      top: topPosition,
       left: 0,
       right: 0,
       child: IgnorePointer(
         child: Material(
           color: Colors.transparent,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical:60,horizontal: 10),
+            padding: const EdgeInsets.symmetric(
+              vertical: NetworkStatusBar.defaultVerticalPadding,
+              horizontal: NetworkStatusBar.defaultHorizontalPadding,
+            ),
             child: Container(
               color: Colors.red.withOpacity(0.8),
-              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 10.0,
+                horizontal: 20.0,
+              ),
               child: Center(
                 child: Text(
-                  widget.message,
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  message,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: NetworkStatusBar.defaultFontSize,
+                  ),
                 ),
               ),
             ),
