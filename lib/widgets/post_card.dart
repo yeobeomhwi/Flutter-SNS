@@ -236,7 +236,9 @@ class _PostCardState extends ConsumerState<PostCard> {
                 toggleLike(widget.post.postId);
               },
               icon: Icon(
-                Icons.favorite,
+                likes.contains(currentUserUid)
+                    ? Icons.favorite
+                    : Icons.favorite_outline_outlined,
                 color: likes.contains(currentUserUid) ? Colors.red : null,
               ),
             ),

@@ -38,7 +38,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         ),
         body: Center(
             child: Text(notificationsState.error!,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30))),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 30))),
       );
     }
 
@@ -46,13 +47,12 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     if (notificationsState.notifications!.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Notifications',
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          title:
+              const Text('알림', style: TextStyle(fontWeight: FontWeight.bold)),
           centerTitle: true,
         ),
         body: const Center(
-            child: Text('No notifications available',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30))),
+            child: Text('알림이 없습니다.', style: TextStyle(fontSize: 20))),
       );
     }
 
