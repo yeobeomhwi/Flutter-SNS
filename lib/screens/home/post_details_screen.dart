@@ -33,7 +33,9 @@ class PostDetailsScreen extends ConsumerWidget {
       );
 
       return Scaffold(
-        appBar: AppBar(title: Text(post.userName),),
+        appBar: AppBar(
+          title: Text(post.userName),
+        ),
         body: Comments(postId: postId),
       );
     } catch (e) {
@@ -127,7 +129,7 @@ class _CommentsState extends ConsumerState<Comments> {
                   PostCardDetils(post: post),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: _buildHeader(),
+                    child: _buildHeader(comments.length),
                   ),
                   ListView.builder(
                     shrinkWrap: true,
@@ -161,12 +163,12 @@ class _CommentsState extends ConsumerState<Comments> {
     );
   }
 
-  Widget _buildHeader() {
-    return const SizedBox(
+  Widget _buildHeader(int commentsCount) {
+    return SizedBox(
       width: double.infinity,
       child: Text(
-        '댓글',
-        style: TextStyle(
+        '댓글 $commentsCount',
+        style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
         ),
