@@ -350,8 +350,6 @@ class PostNotifier extends StateNotifier<PostState> {
       await _firestore.collection('posts').doc(postId).update({
         'caption': newCaption,
       });
-      state =
-          state.copyWith(isUpdateCaption: true); // isUpdateCaption 값을 true로 변경
     } catch (e) {
       state = state.copyWith(error: e.toString()); // 오류 처리
       throw Exception('게시물 수정 중 오류가 발생했습니다');
