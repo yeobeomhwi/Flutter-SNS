@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../providers/bottom_nav/bottom_nav_provider.dart';
 import '../../providers/post/post_provider.dart';
 import '../../services/firebase_service.dart';
 
@@ -126,6 +127,7 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
 
                             // 메인 화면으로 이동
                             context.go('/Main');
+                            ref.read(bottomNavIndexProvider.notifier).resetIndex(); // 인덱스 초기화
                           } catch (e) {
                             // 더 구체적인 에러 메시지 처리 가능
                             ScaffoldMessenger.of(context).showSnackBar(
