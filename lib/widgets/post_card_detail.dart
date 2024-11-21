@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:app_team2/core/icon_constant.dart';
 import 'package:app_team2/widgets/comment_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -96,41 +97,55 @@ class _PostCardDetilsState extends ConsumerState<PostCardDetils> {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.post.userId == currentUserUid) ...[
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
-                  '게시물 삭제',
-                  style: TextStyle(color: Colors.red),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 18, 12, 0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.post.userId == currentUserUid) ...[
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text(
+                    '게시물 삭제',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _deletePost();
+                  },
                 ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deletePost();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('게시물 수정'),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/UpdateCaption', extra: widget.post.postId);
-                },
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: const Text('게시물 수정'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/UpdateCaption', extra: widget.post.postId);
+                  },
+                ),
+              ],
+              if (widget.post.userId != currentUserUid)
+                const Padding(
+                  padding: EdgeInsets.only(top: 12.0),
+                  child: Text(
+                    '내 게시물만 수정할 수 있습니다.',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('취소'),
+                  ),
+                ),
               ),
             ],
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('취소'),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -261,62 +276,76 @@ class _PostCardDetilsState extends ConsumerState<PostCardDetils> {
               ),
             ),
           ),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            IconButton(
-              onPressed: () {
-                toggleLike(widget.post.postId);
-              },
-              icon: Icon(
-                likes.contains(currentUserUid)
-                    ? Icons.favorite
-                    : Icons.favorite_outline_outlined,
-                color:
-                    likes.contains(currentUserUid) ? Color(0xffff0034) : null,
-              ),
-            ),
-            Text(
-              '${likes.length} likes',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: likes.contains(currentUserUid)
-                    ? Color(0xffff0034)
-                    : Colors.black,
-              ),
-            ),
-            SizedBox(
-              width: 16,
-            ),
-            Row(
-              children: [
-                if (!widget.hideCommentButton)
-                  IconButton(
-                    onPressed: () {
-                      // 댓글 모달 표시
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (context) => CommentDialog(
-                          postId: widget.post.postId,
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.comment_outlined),
-                  ),
-                Text(
-                  widget.post.comments.length.toString(),
-                  style: TextStyle(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : Colors.black,
-                    fontSize: 14,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  toggleLike(widget.post.postId);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(
+                    likes.contains(currentUserUid) ? heartSolid : heart,
+                    color: likes.contains(currentUserUid)
+                        ? const Color(0xffff0034)
+                        : null,
                   ),
                 ),
-                const SizedBox(width: 8),
-              ],
-            ),
-          ],
+              ),
+              Text(
+                '${likes.length} likes',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: likes.contains(currentUserUid)
+                      ? const Color(0xffff0034)
+                      : Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                ),
+              ),
+              const SizedBox(
+                width: 12,
+              ),
+              Row(
+                children: [
+                  if (!widget.hideCommentButton)
+                    GestureDetector(
+                      onTap: () {
+                        // 댓글 모달 표시
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (context) => CommentDialog(
+                            postId: widget.post.postId,
+                          ),
+                        );
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(
+                          conversationBubble,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  Text(
+                    widget.post.comments.length.toString(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ),
+            ],
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),

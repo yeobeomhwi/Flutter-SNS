@@ -108,7 +108,10 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('새 게시물'),
+          title: const Text(
+            '새 게시글',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          ),
         ),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -139,7 +142,7 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: yellowColor),
+                      borderSide: const BorderSide(color: greenColor),
                     ),
                     contentPadding: const EdgeInsets.all(12),
                   ),
@@ -147,7 +150,7 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                   textInputAction: TextInputAction.newline,
                 ),
                 const SizedBox(height: 30),
-                customButton('Post', _isLoading ? null : () => _handleSubmit(),
+                customButton('게시하기', _isLoading ? null : () => _handleSubmit(),
                     ref, context),
                 if (_isLoading)
                   const Center(

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:developer' as developer;
-import 'package:app_team2/utils/extensions/email_vaildator.dart';
+import 'package:app_team2/layout/default_layout.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -60,9 +60,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // 연결 상태가 변경될 때마다 호출되는 함수
   Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
-    var uid = FirebaseService()
-        .getCurrentUser()
-        ?.uid;
+    var uid = FirebaseService().getCurrentUser()?.uid;
     setState(() {
       _connectionStatus = result;
       // 와이파이나 모바일 네트워크가 연결되었으면
@@ -116,120 +114,117 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       setState(() {});
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('프로필', style: TextStyle(fontWeight: FontWeight.w600)),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
+    return DefaultLayout(
+      title: '프로필',
+      child: SingleChildScrollView(
         child: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: profileState.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: 30.h),
-
-                // 프로필 이미지 섹션
-                Stack(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: Colors.grey[200],
-                      backgroundImage: FileImage(File(user.photoURL)),
-                      radius: 80.w,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          color: Colors.grey,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon:
-                          const Icon(Icons.edit, color: Colors.white),
-                          onPressed: () async {
-                            final picker = ImagePicker();
-                            final pickedFile = await picker.pickImage(
-                                source: ImageSource.gallery);
-                            if (pickedFile != null) {
-                              final imageFile = File(pickedFile.path);
-                              ref
-                                  .read(profileProvider.notifier)
-                                  .updateProfilePicture(
-                                  user.uid, imageFile);
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 10.h),
-
-                // 사용자 정보 섹션
-                Container(
-                  padding: EdgeInsets.all(20.w),
-                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        user.displayName ?? '이름 없음',
-                        style: TextStyle(
-                            fontSize: 18.sp, fontWeight: FontWeight.w500),
-                        textAlign: TextAlign.center,
+                      SizedBox(height: 30.h),
+
+                      // 프로필 이미지 섹션
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: Colors.grey[200],
+                            backgroundImage: FileImage(File(user.photoURL)),
+                            radius: 80.w,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.grey,
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                icon:
+                                    const Icon(Icons.edit, color: Colors.white),
+                                onPressed: () async {
+                                  final picker = ImagePicker();
+                                  final pickedFile = await picker.pickImage(
+                                      source: ImageSource.gallery);
+                                  if (pickedFile != null) {
+                                    final imageFile = File(pickedFile.path);
+                                    ref
+                                        .read(profileProvider.notifier)
+                                        .updateProfilePicture(
+                                            user.uid, imageFile);
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const Divider(),
-                      Text(
-                        user.email ?? '이메일 없음',
-                        style: TextStyle(
-                            fontSize: 16.sp, color: Colors.grey[700]),
-                        textAlign: TextAlign.center,
+
+                      SizedBox(height: 10.h),
+
+                      // 사용자 정보 섹션
+                      Container(
+                        padding: EdgeInsets.all(20.w),
+                        child: Column(
+                          children: [
+                            Text(
+                              user.displayName ?? '이름 없음',
+                              style: TextStyle(
+                                  fontSize: 18.sp, fontWeight: FontWeight.w500),
+                              textAlign: TextAlign.center,
+                            ),
+                            const Divider(),
+                            Text(
+                              user.email ?? '이메일 없음',
+                              style: TextStyle(
+                                  fontSize: 16.sp, color: Colors.grey[700]),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: 32.h),
+
+                      // 이름 변경 버튼
+                      InfinityButton(
+                        backgroundColor: Colors.grey,
+                        onPressed: () => _showDisplayNameDialog(context),
+                        title: '닉네임 변경',
+                      ),
+
+                      SizedBox(height: 5.h),
+
+                      // 로그아웃 버튼
+                      InfinityButton(
+                        backgroundColor: Colors.grey,
+                        onPressed: () async {
+                          try {
+                            await FirebaseService().signOut();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('로그아웃 되었습니다.'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                            GoRouter.of(context).push('/Login');
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('로그아웃 실패: $e'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        },
+                        title: '로그아웃',
                       ),
                     ],
                   ),
-                ),
-
-                SizedBox(height: 32.h),
-
-                // 이름 변경 버튼
-                InfinityButton(
-                  backgroundColor: Colors.grey,
-                  onPressed: () => _showDisplayNameDialog(context),
-                  title: '이름 변경',
-                ),
-
-                SizedBox(height: 5.h),
-
-                // 로그아웃 버튼
-                InfinityButton(
-                  backgroundColor: Colors.grey,
-                  onPressed: () async {
-                    try {
-                      await FirebaseService().signOut();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('로그아웃 되었습니다.'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                      GoRouter.of(context).push('/Login');
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('로그아웃 실패: $e'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  },
-                  title: '로그아웃',
-                ),
-              ],
-            ),
           ),
         ),
       ),
@@ -238,15 +233,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _showDisplayNameDialog(BuildContext context) {
     final TextEditingController displayNameController = TextEditingController();
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('이름 변경'),
-        backgroundColor: Colors.white,
+        title: const Text(
+          '닉네임 변경',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        ),
         content: Form(
-          key: _formKey,
+          key: formKey,
           child: TextFormField(
             controller: displayNameController,
             decoration: const InputDecoration(
@@ -271,7 +268,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           TextButton(
             onPressed: () {
-              if (_formKey.currentState!.validate()) {
+              if (formKey.currentState!.validate()) {
                 final name = displayNameController.text;
                 ref.read(profileProvider.notifier).updateDisplayName(name);
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -294,6 +291,4 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final regExp = RegExp(r'^[a-zA-Z가-힣\s]+$');
     return regExp.hasMatch(name);
   }
-
 }
-
