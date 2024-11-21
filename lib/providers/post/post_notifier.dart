@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:image/image.dart' as img;
 import '../network/network_providers.dart';
 
 class PostNotifier extends StateNotifier<PostState> {
@@ -157,7 +157,7 @@ class PostNotifier extends StateNotifier<PostState> {
         'userId': userId, // 작성자 ID
         'userName': userName, // 작성자 이름
         'profileImage': profileImage, // 작성자 프로필 이미지
-        'imageUrls': imageUrls,
+        'imageUrls': [],
         'caption': caption, // 게시물 내용
         'isSynced': false, // 동기화 여부는 오프라인이므로 false
         'createdAt': createdAt ?? FieldValue.serverTimestamp(),
@@ -189,17 +189,20 @@ class PostNotifier extends StateNotifier<PostState> {
 
       // 네트워크가 연결되면 Firestorage에 이미지를 업로드하고 URL을 업데이트
       if (ref.read(networkStateProvider).isOnline) {
-        // 업로드할 이미지가 있다면 Firestorage에 업로드
         List<String> updatedImageUrls = [];
 
         for (String imageUrl in imageUrls) {
+          // 이미지 파일 리사이징
+          final imageFile = File(imageUrl);
+          final resizedImageFile = await resizeImage(imageFile, 600);
+
+          // Firestorage에 업로드
           String fileName =
               'images/$postId/${Uri.parse(imageUrl).pathSegments.last}';
           final storageRef = FirebaseStorage.instance.ref().child(fileName);
 
-          // 이미지 파일을 업로드
-          final uploadTask =
-              storageRef.putFile(File(imageUrl)); // imageUrl이 파일 경로일 때
+          // 리사이징된 이미지 업로드
+          final uploadTask = storageRef.putFile(resizedImageFile);
           final downloadUrl = await (await uploadTask).ref.getDownloadURL();
 
           updatedImageUrls.add(downloadUrl);
@@ -219,7 +222,6 @@ class PostNotifier extends StateNotifier<PostState> {
       print("게시물 추가 중 오류 발생: $e");
     }
   }
-
   // 임시 저장 경로에 이미지 저장
   Future<String> saveImageLocally(
       File imageFile, String postId, int index) async {
@@ -340,6 +342,34 @@ class PostNotifier extends StateNotifier<PostState> {
       state = state.copyWith(error: e.toString()); // 오류 처리
     }
   }
+
+
+  Future<File> resizeImage(File imageFile, int targetHeight) async {
+    // 원본 이미지 로드
+    final originalImage = img.decodeImage(await imageFile.readAsBytes());
+    if (originalImage == null) {
+      throw Exception("이미지 디코딩에 실패했습니다.");
+    }
+
+    // 비율에 맞게 너비 계산
+    final aspectRatio = originalImage.width / originalImage.height;
+    final targetWidth = (targetHeight * aspectRatio).round();
+
+    // 리사이징
+    final resizedImage = img.copyResize(
+      originalImage,
+      width: targetWidth,
+      height: targetHeight, // 세로 고정
+    );
+
+    // 리사이징된 이미지 저장
+    final resizedImagePath = '${imageFile.path}_resized.jpg';
+    final resizedImageFile = File(resizedImagePath);
+    await resizedImageFile.writeAsBytes(img.encodeJpg(resizedImage));
+
+    return resizedImageFile;
+  }
+
 
   // 리소스 해제
   @override

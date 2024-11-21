@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image/image.dart' as img;
 
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -259,98 +260,6 @@ class FirebaseService {
     }
   }
 
-  // Firestore에 게시물 이미지 URL 저장하기
-  Future<void> updatePostImageUrls(
-      String postId, List<String> imageUrls) async {
-    try {
-      await _firestore.collection('posts').doc(postId).update({
-        'imageUrls': imageUrls, // Firestore에 프로필 이미지 URL 저장
-      });
-    } catch (e) {
-      print("프로필 이미지 URL 저장 오류: $e");
-    }
-  }
-
-  Future<String> uploadSingleImage(File imageFile, String path) async {
-    try {
-      // 이미지 사이즈 조절
-      // Storage에 업로드
-      final storageRef = _storage.ref().child(path);
-      final uploadTask = storageRef.putFile(imageFile);
-
-      // 업로드 진행 상황 모니터링 (선택적)
-      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        final progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        print('Upload progress: ${progress.toStringAsFixed(2)}%');
-      });
-
-      // 업로드 완료 대기 및 URL 반환
-      await uploadTask;
-      return await storageRef.getDownloadURL();
-    } catch (e) {
-      print("이미지 업로드 오류: $e");
-      rethrow;
-    }
-  }
-
-  Future<List<String>> uploadPostImages(
-      String postId, List<File> imageFiles) async {
-    try {
-      // 모든 이미지를 병렬로 업로드
-      final futures = imageFiles.asMap().map((index, file) {
-        final path = 'post_images/${postId}_$index.jpg';
-        return MapEntry(index, uploadSingleImage(file, path));
-      }).values;
-
-      // 모든 업로드 완료 대기
-      final urls = await Future.wait(futures);
-      return urls;
-    } catch (e) {
-      print("이미지 업로드 오류: $e");
-      rethrow;
-    }
-  }
-
-  // 새로운 포스트 추가
-  Future<void> createPost(
-      String userId, String caption, List<File> imagePaths) async {
-    try {
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final postId = '$userId$timestamp';
-      final currentUser = FirebaseAuth.instance.currentUser;
-
-      if (currentUser == null) {
-        throw Exception('로그인된 사용자가 없습니다.');
-      }
-
-      // 이미지 업로드와 포스트 데이터 준비를 병렬로 처리
-      final imageUploadFuture = uploadPostImages(postId, imagePaths);
-
-      final postData = {
-        'postId': postId,
-        'userId': userId,
-        'userName': currentUser.displayName ?? '익명',
-        'profileImage': currentUser.photoURL ?? '',
-        'caption': caption,
-        'createdAt': FieldValue.serverTimestamp(),
-        'likes': <String>[],
-        'comments': <Map<String, String>>[],
-      };
-
-      // 이미지 업로드 완료 대기
-      final imageUrls = await imageUploadFuture;
-      postData['imageUrls'] = imageUrls;
-
-      // 트랜잭션으로 포스트 생성
-      await _firestore.runTransaction((transaction) async {
-        transaction.set(_firestore.collection('posts').doc(postId), postData);
-      });
-    } catch (e) {
-      print("포스트 생성 중 오류 발생: $e");
-      rethrow;
-    }
-  }
 
   //좋아요 기능
   Future<void> toggleLikePost(String? postId) async {
@@ -412,42 +321,5 @@ class FirebaseService {
       print("알림 테이블이 이미 존재합니다.");
     }
   }
-
-  // 알림 데이터 가져오기
-  Future<List<Map<String, dynamic>>> getNotifications() async {
-    try {
-      print('시작');
-
-      // Firestore에서 알림 문서 가져오기
-      var docRef = _firestore.collection('notifications').doc(_auth.currentUser?.uid);
-      print('Document Reference: $docRef');  // Print the document reference
-
-      var docSnapshot = await docRef.get();
-      print('Document Snapshot: ${docSnapshot.exists}'); // Print whether the document exists
-
-      // 문서가 존재하면 메시지 가져오기
-      if (docSnapshot.exists) {
-        var messages = docSnapshot.data()?['messages'] as List<dynamic>?;
-        print('Messages: $messages');  // Print the raw messages data
-
-        if (messages != null) {
-          // 메시지 리스트를 반환
-          List<Map<String, dynamic>> notifications = List<Map<String, dynamic>>.from(messages);
-          print('Converted Notifications: $notifications');  // Print the converted notifications list
-          return notifications;
-        } else {
-          print("알림 메시지가 없습니다.");
-          return [];
-        }
-      } else {
-        print("알림 테이블이 존재하지 않습니다.");
-        return [];
-      }
-    } catch (e) {
-      print("알림 데이터를 가져오는 중 오류 발생: $e");
-      return [];
-    }
-  }
-
 
 }
