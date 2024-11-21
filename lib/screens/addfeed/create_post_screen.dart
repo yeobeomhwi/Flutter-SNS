@@ -48,7 +48,19 @@ class CreatePostScreen extends ConsumerWidget {
                 );
               }
             },
-            child: const Text('다음'),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black,
+            ),
+            child: Text(
+              '다음',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
+              ),
+            ),
           ),
         ],
       ),
@@ -61,7 +73,7 @@ class CreatePostScreen extends ConsumerWidget {
               const SelectedImagePreview(),
               const SizedBox(height: 20),
               // 이미지 불러오기 버튼
-              _imageLoadButtons(ref),
+              _imageLoadButtons(ref, context),
               const SizedBox(height: 20),
               // 선택된 이미지 gridView
               _gridPhoto(pickedImages, ref),
@@ -73,33 +85,38 @@ class CreatePostScreen extends ConsumerWidget {
   }
 
   // 이미지 불러오기 버튼
-  Widget _imageLoadButtons(WidgetRef ref) {
+  Widget _imageLoadButtons(WidgetRef ref, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(
-            child: ElevatedButton(
-              onPressed: () => getImage(ImageSource.camera, ref),
-              child: const Text('Camera'),
-            ),
-          ),
+          _customButton(
+              '카메라', () => getImage(ImageSource.camera, ref), ref, context),
           const SizedBox(width: 20),
-          SizedBox(
-            child: ElevatedButton(
-              onPressed: () => getImage(ImageSource.gallery, ref),
-              child: const Text('Image'),
-            ),
-          ),
+          _customButton(
+              '갤러리', () => getImage(ImageSource.gallery, ref), ref, context),
           const SizedBox(width: 20),
-          SizedBox(
-            child: ElevatedButton(
-              onPressed: () => getMultiImage(ref),
-              child: const Text('Multi Image'),
-            ),
-          ),
+          _customButton('복수 선택', () => getMultiImage(ref), ref, context),
         ],
+      ),
+    );
+  }
+
+  Widget _customButton(String title, VoidCallback onPressed, WidgetRef ref,
+      BuildContext context) {
+    return SizedBox(
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+          foregroundColor: Theme.of(context).brightness == Brightness.dark
+              ? Colors.black
+              : Colors.white,
+        ),
+        child: Text(title),
       ),
     );
   }
