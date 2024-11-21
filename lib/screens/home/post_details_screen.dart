@@ -1,5 +1,5 @@
+import 'package:app_team2/core/color_constant.dart';
 import 'package:app_team2/providers/post/post_provider.dart';
-import 'package:app_team2/widgets/post_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -32,22 +32,28 @@ class PostDetailsScreen extends ConsumerWidget {
         },
       );
 
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(post.userName),
+      return GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(post.userName),
+          ),
+          body: Comments(postId: postId),
         ),
-        body: Comments(postId: postId),
       );
     } catch (e) {
       // 에러 발생 시 에러 화면 표시
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('포스트 상세페이지'),
-        ),
-        body: const Center(
-          child: Text(
-            '게시물을 불러오는 중입니다...',
-            style: TextStyle(fontSize: 16),
+      return GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('포스트 상세페이지'),
+          ),
+          body: const Center(
+            child: Text(
+              '게시물을 불러오는 중입니다...',
+              style: TextStyle(fontSize: 16),
+            ),
           ),
         ),
       );
@@ -117,48 +123,51 @@ class _CommentsState extends ConsumerState<Comments> {
     );
     final comments = post.comments;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              child: Column(
-                children: [
-                  PostCardDetils(post: post),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: _buildHeader(comments.length),
-                  ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: comments.length,
-                    itemBuilder: (context, index) {
-                      final comment = comments[index];
-                      return Column(
-                        children: [
-                          _CommentItem(
-                            comment: comment,
-                            currentUserId: currentUser?.uid,
-                            onDelete: () =>
-                                ref.read(postProvider.notifier).deleteComment(
-                                      postId: widget.postId,
-                                      commentId: comment['commentId'],
-                                    ),
-                          ),
-                          const Divider()
-                        ],
-                      );
-                    },
-                  ),
-                ],
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Column(
+                  children: [
+                    PostCardDetils(post: post),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: _buildHeader(comments.length),
+                    ),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        final comment = comments[index];
+                        return Column(
+                          children: [
+                            _CommentItem(
+                              comment: comment,
+                              currentUserId: currentUser?.uid,
+                              onDelete: () =>
+                                  ref.read(postProvider.notifier).deleteComment(
+                                        postId: widget.postId,
+                                        commentId: comment['commentId'],
+                                      ),
+                            ),
+                            const Divider()
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          _buildCommentInput(post.postId),
-        ],
+            _buildCommentInput(post.postId),
+          ],
+        ),
       ),
     );
   }
@@ -209,7 +218,10 @@ class _CommentsState extends ConsumerState<Comments> {
           ),
           const SizedBox(width: 8),
           IconButton(
-            icon: const Icon(Icons.send),
+            icon: const Icon(
+              Icons.send,
+              color: greenColor,
+            ),
             onPressed: () => _submitComment(postId),
           ),
         ],
