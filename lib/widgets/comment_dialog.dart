@@ -19,15 +19,16 @@ class CommentDialog extends ConsumerStatefulWidget {
 class _CommentDialogState extends ConsumerState<CommentDialog> {
   final TextEditingController _commentController = TextEditingController();
   final currentUser = FirebaseAuth.instance.currentUser;
-
-  // 키보드가 올라올 때 화면 자동 스크롤을 위한 컨트롤러
   final ScrollController _scrollController = ScrollController();
 
-  @override
-  void dispose() {
-    _commentController.dispose();
-    _scrollController.dispose();
-    super.dispose();
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   void _submitComment(String postId) {
@@ -41,16 +42,17 @@ class _CommentDialogState extends ConsumerState<CommentDialog> {
         );
     _commentController.clear();
 
-    // 댓글 작성 후 스크롤을 맨 아래로 이동
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+    // 댓글 추가 후 스크롤 최하단으로 이동
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _scrollToBottom();
     });
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
