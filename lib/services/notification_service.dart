@@ -3,6 +3,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -79,4 +81,40 @@ Future<void> initializeLocalNotifications() async {
       }
     }
   });
+}
+
+// 특정 알림 메시지 삭제 함수
+Future<void> deleteNotification(String messageId) async {
+  try {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      throw Exception('사용자가 로그인되어 있지 않습니다.');
+    }
+
+    final userDoc = FirebaseFirestore.instance
+        .collection('notifications')
+        .doc(currentUser.uid);
+
+    // 현재 메시지 목록 가져오기
+    final docSnapshot = await userDoc.get();
+    if (!docSnapshot.exists) {
+      throw Exception('알림 데이터가 존재하지 않습니다.');
+    }
+
+    final data = docSnapshot.data();
+    if (data == null) {
+      throw Exception('알림 데이터가 비어있습니다.');
+    }
+
+    List<dynamic> messages = List.from(data['messages'] ?? []);
+
+    // messageId와 일치하는 메시지 찾아서 삭제
+    messages.removeWhere((message) => message['messageId'] == messageId);
+
+    // 업데이트된 메시지 목록 저장
+    await userDoc.update({'messages': messages});
+  } catch (e) {
+    print('알림 메시지 삭제 중 오류 발생: $e');
+    rethrow;
+  }
 }

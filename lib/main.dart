@@ -32,6 +32,9 @@ class MyApp extends StatelessWidget {
             appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.white, foregroundColor: Colors.black),
             primaryColor: Colors.white,
+            textTheme: Typography.material2021().black.apply(
+                  fontFamily: 'Pretendard',
+                ),
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(
               backgroundColor: Colors.white,
               selectedItemColor: Colors.black,
@@ -40,7 +43,10 @@ class MyApp extends StatelessWidget {
         darkTheme: ThemeData.dark().copyWith(
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(
                 selectedItemColor: Colors.white,
-                unselectedItemColor: Colors.grey)),
+                unselectedItemColor: Colors.grey),
+            textTheme: Typography.material2021().white.apply(
+                  fontFamily: 'Pretendard',
+                )),
         // 기본 다크모드 테마
         themeMode: ThemeMode.system, // 시스템 설정에 따라 자동 전환
       ),

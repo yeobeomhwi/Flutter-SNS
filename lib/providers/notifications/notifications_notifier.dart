@@ -43,10 +43,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         final newNotifications = messages.map((message) {
           // null 체크 및 기본값 설정
           final postId = message['postid']?.toString() ?? '';
-          if (postId.isEmpty) {
-            print('경고: 알림에서 빈 postId 발견');
-            print('해당 메시지 전체 내용: $message');
-          }
+          if (postId.isEmpty) {}
 
           return Notification(
               body: message['body']?.toString() ?? '',
@@ -65,8 +62,6 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         );
       },
       onError: (error) {
-        print("알림 데이터 가져오기 오류: $error");
-        print("오류 세부사항: ${error.toString()}");
         state = state.copyWith(
           error: error.toString(),
           isLoading: false,
@@ -89,12 +84,6 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
       notificationsRef.snapshots().listen((snapshot) {
         final notifications = snapshot.docs.map((doc) {
           final data = doc.data();
-          // 디버깅 로그 추가
-          print('=== Notification Data from Firestore ===');
-          print('Document ID: ${doc.id}');
-          print('Data: $data');
-          print('PostId: ${data['postId']}');
-          print('====================================');
 
           return Notification.fromMap({
             ...data,

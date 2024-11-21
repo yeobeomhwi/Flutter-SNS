@@ -65,7 +65,7 @@ class Notification {
       title: map['title'] ?? '',
       type: map['type'] ?? '',
       user: map['user'] ?? '',
-      comment:  map['comment'] ?? '',
+      comment: map['comment'] ?? '',
     );
   }
 

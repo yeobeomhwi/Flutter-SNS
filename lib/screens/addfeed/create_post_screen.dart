@@ -32,7 +32,10 @@ class CreatePostScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create a Post'),
+        title: const Text(
+          '새 게시물 작성',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        ),
         actions: [
           TextButton(
             onPressed: () {
