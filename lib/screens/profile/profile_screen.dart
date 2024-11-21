@@ -141,8 +141,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             bottom: 0,
                             right: 0,
                             child: Container(
-                              decoration: const BoxDecoration(
-                                color: Color(0xffF5F5F5),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).primaryColor,
                                 shape: BoxShape.circle,
                               ),
                               child: IconButton(

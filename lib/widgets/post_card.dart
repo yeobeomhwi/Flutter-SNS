@@ -6,17 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:app_team2/data/models/post.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/post/post_provider.dart';
 import '../services/firebase_service.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final Post post;
   final bool hideCommentButton;
+  final bool isUpdateCaption;
 
   const PostCard({
     super.key,
     required this.post,
     this.hideCommentButton = false,
+    this.isUpdateCaption = false,
   });
 
   @override
@@ -39,6 +42,11 @@ class _PostCardState extends ConsumerState<PostCard> {
     setState(() {
       likes = List<String>.from(widget.post.likes);
     });
+  }
+
+  // 게시물 수정 함수
+  void _updateCaption() {
+    context.go('/UpdateCaption', extra: widget.post.postId);
   }
 
   // 게시물 삭제 함수
@@ -84,7 +92,7 @@ class _PostCardState extends ConsumerState<PostCard> {
     }
   }
 
-  void _showPostOptions() {
+  void _showPostOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
@@ -107,19 +115,11 @@ class _PostCardState extends ConsumerState<PostCard> {
                 leading: const Icon(Icons.edit),
                 title: const Text('게시물 수정'),
                 onTap: () {
-                  // TODO: 게시물 수정 기능 구현
                   Navigator.pop(context);
+                  context.push('/UpdateCaption', extra: widget.post.postId);
                 },
               ),
             ],
-            ListTile(
-              leading: const Icon(Icons.share),
-              title: const Text('공유하기'),
-              onTap: () {
-                // TODO: 공유하기 기능 구현
-                Navigator.pop(context);
-              },
-            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: SizedBox(
@@ -168,7 +168,7 @@ class _PostCardState extends ConsumerState<PostCard> {
               Text(widget.post.userName),
               const Spacer(),
               IconButton(
-                onPressed: _showPostOptions,
+                onPressed: () => _showPostOptions(context),
                 icon: const Icon(Icons.more_vert),
               ),
             ],
@@ -260,8 +260,10 @@ class _PostCardState extends ConsumerState<PostCard> {
                   ),
                 Text(
                   widget.post.comments.length.toString(),
-                  style: const TextStyle(
-                    color: Colors.black54,
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                     fontSize: 14,
                   ),
                 ),
@@ -281,7 +283,7 @@ class _PostCardState extends ConsumerState<PostCard> {
               ),
               const SizedBox(height: 4.0),
               Text(
-                '${widget.post.userName}: ${widget.post.caption}',
+                widget.post.caption,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

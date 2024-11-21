@@ -341,6 +341,21 @@ class PostNotifier extends StateNotifier<PostState> {
     }
   }
 
+  // 게시물 캡션 업데이트
+  Future<void> updateCaption({
+    required String postId,
+    required String newCaption,
+  }) async {
+    try {
+      await _firestore.collection('posts').doc(postId).update({
+        'caption': newCaption,
+      });
+    } catch (e) {
+      state = state.copyWith(error: e.toString()); // 오류 처리
+      throw Exception('게시물 수정 중 오류가 발생했습니다');
+    }
+  }
+
   // 리소스 해제
   @override
   void dispose() {

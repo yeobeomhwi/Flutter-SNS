@@ -1,3 +1,4 @@
+import 'package:app_team2/screens/addfeed/update_caption_screen.dart';
 import 'package:app_team2/screens/home/post_details_screen.dart';
 import 'package:app_team2/screens/notifications/notifications_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,6 +40,12 @@ class CustomRouter {
       GoRoute(
         path: '/PostDetails',
         builder: (context, state) => PostDetailsScreen(
+          postId: state.extra as String,
+        ),
+      ),
+      GoRoute(
+        path: '/UpdateCaption',
+        builder: (context, state) => UpdateCaptionScreen(
           postId: state.extra as String,
         ),
       ),
