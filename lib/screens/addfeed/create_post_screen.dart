@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:app_team2/layout/default_layout.dart';
 import 'package:app_team2/providers/post/picked_images_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,41 +32,36 @@ class CreatePostScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pickedImages = ref.watch(pickedImagesProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          '새 게시물 작성',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              if (pickedImages.isNotEmpty) {
-                context.push('/CreateCaption');
-              } else {
-                // 이미지가 선택되지 않았을 때 경고 메시지 표시
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('이미지를 선택해주세요.')),
-                );
-              }
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.black,
-            ),
-            child: Text(
-              '다음',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : Colors.black,
-              ),
+    return DefaultLayout(
+      title: '새 게시글 작성',
+      actions: [
+        TextButton(
+          onPressed: () {
+            if (pickedImages.isNotEmpty) {
+              context.push('/CreateCaption');
+            } else {
+              // 이미지가 선택되지 않았을 때 경고 메시지 표시
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('이미지를 선택해주세요.')),
+              );
+            }
+          },
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.black,
+          ),
+          child: Text(
+            '다음',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
             ),
           ),
-        ],
-      ),
-      body: SafeArea(
+        ),
+      ],
+      child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
           child: Column(

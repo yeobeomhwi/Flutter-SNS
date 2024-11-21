@@ -97,41 +97,55 @@ class _PostCardDetilsState extends ConsumerState<PostCardDetils> {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.post.userId == currentUserUid) ...[
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
-                  '게시물 삭제',
-                  style: TextStyle(color: Colors.red),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 18, 12, 0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.post.userId == currentUserUid) ...[
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text(
+                    '게시물 삭제',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _deletePost();
+                  },
                 ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deletePost();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('게시물 수정'),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/UpdateCaption', extra: widget.post.postId);
-                },
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: const Text('게시물 수정'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/UpdateCaption', extra: widget.post.postId);
+                  },
+                ),
+              ],
+              if (widget.post.userId != currentUserUid)
+                const Padding(
+                  padding: EdgeInsets.only(top: 12.0),
+                  child: Text(
+                    '내 게시물만 수정할 수 있습니다.',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('취소'),
+                  ),
+                ),
               ),
             ],
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('취소'),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

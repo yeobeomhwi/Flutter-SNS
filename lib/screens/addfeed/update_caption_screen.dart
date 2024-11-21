@@ -1,7 +1,9 @@
 import 'package:app_team2/providers/post/post_provider.dart';
-import 'package:app_team2/widgets/post_card.dart';
+import 'package:app_team2/widgets/custom_button.dart';
+import 'package:app_team2/widgets/post_card_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:app_team2/core/color_constant.dart';
 
 class UpdateCaptionScreen extends ConsumerWidget {
   final String postId;
@@ -31,7 +33,10 @@ class UpdateCaptionScreen extends ConsumerWidget {
 
       return Scaffold(
         appBar: AppBar(
-          title: const Text('게시물 수정'),
+          title: const Text(
+            '게시물 수정',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -47,7 +52,7 @@ class UpdateCaptionScreen extends ConsumerWidget {
       // 에러 발생 시 에러 화면 표시
       return Scaffold(
         appBar: AppBar(
-          title: const Text('포스트 상세페이지'),
+          title: const Text('게시물 수정'),
         ),
         body: const Center(
           child: Text(
@@ -134,7 +139,7 @@ class _UpdateCaptionFormState extends ConsumerState<UpdateCaptionForm> {
           ),
           child: Column(
             children: [
-              PostCard(
+              PostCardDetils(
                 post: widget.post,
                 isUpdateCaption: isUpdated,
               ),
@@ -144,15 +149,20 @@ class _UpdateCaptionFormState extends ConsumerState<UpdateCaptionForm> {
                 decoration: const InputDecoration(
                   hintText: '문구 입력...',
                   border: OutlineInputBorder(),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: greenColor),
+                  ),
                 ),
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _updateCaption,
-                  child: const Text('수정하기'),
+                child: customButton(
+                  '수정하기',
+                  _updateCaption,
+                  ref,
+                  context,
                 ),
               ),
             ],
