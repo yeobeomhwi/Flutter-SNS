@@ -138,6 +138,8 @@ class _PostCardState extends ConsumerState<PostCard> {
 
   @override
   Widget build(BuildContext context) {
+    final postState = ref.watch(postProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -244,7 +246,6 @@ class _PostCardState extends ConsumerState<PostCard> {
             },
           ),
         ),
-
         if (widget.post.imageUrls.length > 1)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -320,7 +321,9 @@ class _PostCardState extends ConsumerState<PostCard> {
               ),
               const SizedBox(height: 4.0),
               Text(
-                _getTimeAgo(widget.post.createdAt),
+                postState.isUpdateCaption
+                    ? '${_getTimeAgo(widget.post.createdAt)} (수정됨)'
+                    : _getTimeAgo(widget.post.createdAt),
                 style: const TextStyle(fontSize: 12.0, color: Colors.grey),
               ),
             ],

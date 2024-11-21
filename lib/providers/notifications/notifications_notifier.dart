@@ -104,4 +104,31 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
       );
     }
   }
+
+  // 특정 알림 삭제
+  Future<void> deleteNotification(String messageId) async {
+    try {
+      final currentUserUid = FirebaseService().getCurrentUserUid();
+      if (currentUserUid == null) {
+        throw Exception('사용자 인증이 필요합니다');
+      }
+
+      final docRef = _firestore.collection('notifications').doc(currentUserUid);
+      final docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        throw Exception('알림을 찾을 수 없습니다');
+      }
+
+      final List<dynamic> messages = docSnapshot.data()?['messages'] ?? [];
+      final updatedMessages = messages
+          .where((message) => message['messageId']?.toString() != messageId)
+          .toList();
+
+      await docRef.update({'messages': updatedMessages});
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      throw Exception('알림 삭제 중 오류가 발생했습니다');
+    }
+  }
 }

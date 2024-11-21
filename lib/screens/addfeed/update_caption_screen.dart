@@ -1,7 +1,5 @@
 import 'package:app_team2/providers/post/post_provider.dart';
 import 'package:app_team2/widgets/post_card.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -78,6 +76,7 @@ class UpdateCaptionForm extends ConsumerStatefulWidget {
 
 class _UpdateCaptionFormState extends ConsumerState<UpdateCaptionForm> {
   late TextEditingController _captionController;
+  bool isUpdated = false;
 
   @override
   void initState() {
@@ -100,6 +99,10 @@ class _UpdateCaptionFormState extends ConsumerState<UpdateCaptionForm> {
             newCaption: _captionController.text.trim(),
           );
 
+      setState(() {
+        isUpdated = true;
+      });
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('게시물이 수정되었습니다')),
@@ -117,35 +120,43 @@ class _UpdateCaptionFormState extends ConsumerState<UpdateCaptionForm> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          16.0,
-          16.0,
-          16.0,
-          MediaQuery.of(context).viewInsets.bottom + 16.0,
-        ),
-        child: Column(
-          children: [
-            PostCard(post: widget.post, isUpdateCaption: true),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _captionController,
-              decoration: const InputDecoration(
-                hintText: '문구 입력...',
-                border: OutlineInputBorder(),
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            16.0,
+            16.0,
+            16.0,
+            MediaQuery.of(context).viewInsets.bottom + 16.0,
+          ),
+          child: Column(
+            children: [
+              PostCard(
+                post: widget.post,
+                isUpdateCaption: isUpdated,
               ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _updateCaption,
-                child: const Text('수정하기'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _captionController,
+                decoration: const InputDecoration(
+                  hintText: '문구 입력...',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _updateCaption,
+                  child: const Text('수정하기'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
