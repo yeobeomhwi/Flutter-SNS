@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../widgets/post_card_detail.dart';
+
 class PostDetailsScreen extends ConsumerWidget {
   final String postId;
   const PostDetailsScreen({super.key, required this.postId});
@@ -12,7 +14,6 @@ class PostDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final postState = ref.watch(postProvider);
-
     // 로딩 상태 처리
     if (postState.isLoading) {
       return const Scaffold(
@@ -32,7 +33,7 @@ class PostDetailsScreen extends ConsumerWidget {
       );
 
       return Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(title: Text(post.userName),),
         body: Comments(postId: postId),
       );
     } catch (e) {
@@ -123,7 +124,7 @@ class _CommentsState extends ConsumerState<Comments> {
               controller: _scrollController,
               child: Column(
                 children: [
-                  PostCard(post: post),
+                  PostCardDetils(post: post),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: _buildHeader(),

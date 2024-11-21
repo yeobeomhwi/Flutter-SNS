@@ -8,15 +8,14 @@ import 'package:app_team2/data/models/post.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/post/post_provider.dart';
-import '../screens/home/post_details_screen.dart';
 import '../services/firebase_service.dart';
 
-class PostCard extends ConsumerStatefulWidget {
+class PostCardDetils extends ConsumerStatefulWidget {
   final Post post;
   final bool hideCommentButton;
   final bool isUpdateCaption;
 
-  const PostCard({
+  const PostCardDetils({
     super.key,
     required this.post,
     this.hideCommentButton = false,
@@ -24,10 +23,10 @@ class PostCard extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<PostCard> createState() => _PostCardState();
+  ConsumerState<PostCardDetils> createState() => _PostCardDetilsState();
 }
 
-class _PostCardState extends ConsumerState<PostCard> {
+class _PostCardDetilsState extends ConsumerState<PostCardDetils> {
   final PageController _controller = PageController();
   List<String> likes = [];
   final currentUserUid = FirebaseService().getCurrentUserUid();
@@ -325,49 +324,10 @@ class _PostCardState extends ConsumerState<PostCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 4.0),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    child:
-                        Text(
-                          widget.post.caption,
-                          maxLines: 2,
-                        ),
-                    ),
-                  if (widget.post.caption.length > 70) // 텍스트가 100자 이상일 때만 ...more 표시
-                    GestureDetector(
-                      onTap: () {
-                        // 페이지 이동 로직
-                        if (widget.post.postId.isNotEmpty) {
-                          print(
-                              'Tapped notification with postId: ${widget.post.postId}');
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  PostDetailsScreen(postId: widget.post.postId),
-                            ),
-                          );
-                        } else {
-                          print('PostId is empty!');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('유효하지 않은 게시물입니다.')),
-                          );
-                        }
-                      },
-                      child: Text(
-                        '...more',
-                        style: TextStyle(
-                          color: Colors.blue, // 하이라이트 색상
-                          fontWeight: FontWeight.bold, // 강조 스타일
-                        ),
-                      ),
-                    ),
-                ],
+              Text(
+                widget.post.caption,
+                maxLines: 99,
               ),
-
               const SizedBox(height: 4.0),
               Text(
                 postState.isUpdateCaption
