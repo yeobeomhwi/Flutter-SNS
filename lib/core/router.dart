@@ -17,9 +17,10 @@ class CustomRouter {
         path: "/Login",
         builder: (context, state) => const LoginScreen(),
       ),
+      // MainScreen을 ConsumerWidget으로 감싸기 위해 ProviderScope로 감싸는 방법
       GoRoute(
         path: "/Main",
-        builder: (context, state) => const MainScreen(),
+        builder: (context, state) => const MainScreenWrapper(),
       ),
       GoRoute(
         path: "/CreatePost",
@@ -51,12 +52,11 @@ class CustomRouter {
       ),
     ],
     redirect: (context, state) {
-      final User? user = FirebaseAuth.instance.currentUser;
+      final user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
         // 로그인 화면 또는 회원가입 화면으로 접근할 수 있도록 수정
-        if (state.uri.toString() != '/Login' &&
-            state.uri.toString() != '/Signup') {
+        if (state.uri.toString() != '/Login' && state.uri.toString() != '/Signup') {
           return '/Login';
         }
       }

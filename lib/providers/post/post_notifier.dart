@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:image/image.dart' as img;
 import '../network/network_providers.dart';
 
 class PostNotifier extends StateNotifier<PostState> {
@@ -149,7 +149,6 @@ class PostNotifier extends StateNotifier<PostState> {
     required List<String> imageUrls,
     required String postId,
   }) async {
-    print('================================1');
     try {
       // Firestore에 저장할 데이터
       final newPost = {
@@ -164,8 +163,9 @@ class PostNotifier extends StateNotifier<PostState> {
         'likes': likes, // 좋아요 리스트
         'comments': <Map<String, dynamic>>[], // 빈 댓글 리스트로 초기화
       };
-      print('=====================================================2');
+
       final currentPosts = state.posts;
+
       final updatedPost = Post(
         postId: postId,
         userId: userId,
@@ -181,25 +181,25 @@ class PostNotifier extends StateNotifier<PostState> {
       final updatedPosts = List<Post>.from(currentPosts)..add(updatedPost);
       state = state.copyWith(posts: updatedPosts);
 
-      print('=====================================================3');
-      print('================${state.posts.toString()}');
-      print('=========추가완료===========');
       // Firestore에 오프라인 상태로 저장
       await _firestore.collection('posts').doc(postId).set(newPost);
 
       // 네트워크가 연결되면 Firestorage에 이미지를 업로드하고 URL을 업데이트
       if (ref.read(networkStateProvider).isOnline) {
-        // 업로드할 이미지가 있다면 Firestorage에 업로드
         List<String> updatedImageUrls = [];
 
         for (String imageUrl in imageUrls) {
+          // 이미지 파일 리사이징
+          final imageFile = File(imageUrl);
+          final resizedImageFile = await resizeImage(imageFile, 600);
+
+          // Firestorage에 업로드
           String fileName =
               'images/$postId/${Uri.parse(imageUrl).pathSegments.last}';
           final storageRef = FirebaseStorage.instance.ref().child(fileName);
 
-          // 이미지 파일을 업로드
-          final uploadTask =
-              storageRef.putFile(File(imageUrl)); // imageUrl이 파일 경로일 때
+          // 리사이징된 이미지 업로드
+          final uploadTask = storageRef.putFile(resizedImageFile);
           final downloadUrl = await (await uploadTask).ref.getDownloadURL();
 
           updatedImageUrls.add(downloadUrl);
@@ -219,6 +219,7 @@ class PostNotifier extends StateNotifier<PostState> {
       print("게시물 추가 중 오류 발생: $e");
     }
   }
+
 
   // 임시 저장 경로에 이미지 저장
   Future<String> saveImageLocally(
@@ -341,6 +342,7 @@ class PostNotifier extends StateNotifier<PostState> {
     }
   }
 
+
   // 게시물 캡션 업데이트
   Future<void> updateCaption({
     required String postId,
@@ -355,6 +357,34 @@ class PostNotifier extends StateNotifier<PostState> {
       throw Exception('게시물 수정 중 오류가 발생했습니다');
     }
   }
+
+
+  Future<File> resizeImage(File imageFile, int targetHeight) async {
+    // 원본 이미지 로드
+    final originalImage = img.decodeImage(await imageFile.readAsBytes());
+    if (originalImage == null) {
+      throw Exception("이미지 디코딩에 실패했습니다.");
+    }
+
+    // 비율에 맞게 너비 계산
+    final aspectRatio = originalImage.width / originalImage.height;
+    final targetWidth = (targetHeight * aspectRatio).round();
+
+    // 리사이징
+    final resizedImage = img.copyResize(
+      originalImage,
+      width: targetWidth,
+      height: targetHeight, // 세로 고정
+    );
+
+    // 리사이징된 이미지 저장
+    final resizedImagePath = '${imageFile.path}_resized.jpg';
+    final resizedImageFile = File(resizedImagePath);
+    await resizedImageFile.writeAsBytes(img.encodeJpg(resizedImage));
+
+    return resizedImageFile;
+  }
+
 
   // 리소스 해제
   @override

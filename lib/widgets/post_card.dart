@@ -188,7 +188,17 @@ class _PostCardState extends ConsumerState<PostCard> {
                   height: 300,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 8),
+                        Text(
+                          '이미지 다운로드 중...',
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
+                      ],
+                    ),
                   ),
                   errorWidget: (context, url, error) => const Center(
                     child: Icon(
@@ -201,8 +211,28 @@ class _PostCardState extends ConsumerState<PostCard> {
                 );
               } else if (widget.post.imageUrls[index].startsWith('/data')) {
                 // URL이 "/data"로 시작하면 로컬 파일에서 이미지 로드
+                final imageFile = File(widget.post.imageUrls[index]);
+
+                // 로컬 파일이 없으면 에러 메시지 처리
+                if (!imageFile.existsSync()) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 8),
+                        Text(
+                          '이미지 다운로드 중...',
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                // 파일이 존재하면 이미지 로드
                 return Image.file(
-                  File(widget.post.imageUrls[index]), // 파일에서 로드
+                  imageFile,
                   width: double.infinity,
                   height: 300,
                   fit: BoxFit.cover,
@@ -214,6 +244,7 @@ class _PostCardState extends ConsumerState<PostCard> {
             },
           ),
         ),
+
         if (widget.post.imageUrls.length > 1)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
