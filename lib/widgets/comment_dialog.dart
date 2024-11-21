@@ -66,7 +66,6 @@ class _CommentDialogState extends ConsumerState<CommentDialog> {
       height: MediaQuery.of(context).size.height * 0.6,
       padding: const EdgeInsets.all(16.0),
       decoration: const BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -82,14 +81,21 @@ class _CommentDialogState extends ConsumerState<CommentDialog> {
   }
 
   Widget _buildHeader() {
+    final postState = ref.watch(postProvider);
+    final post = postState.posts.firstWhere(
+      (post) => post.postId == widget.postId,
+      orElse: () => throw Exception('Post not found'),
+    );
+    final comments = post.comments;
+
     return Container(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: const EdgeInsets.only(bottom: 16, left: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Text(
-            'Comments',
-            style: TextStyle(
+            '댓글 ${comments.length}',
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -115,7 +121,7 @@ class _CommentDialogState extends ConsumerState<CommentDialog> {
                     commentId: comment['commentId'],
                   ),
             ),
-            Divider()
+            const Divider()
           ],
         );
       },
@@ -157,6 +163,7 @@ class _CommentDialogState extends ConsumerState<CommentDialog> {
     );
   }
 }
+
 class _CommentItem extends StatefulWidget {
   final Map<String, dynamic> comment;
   final String? currentUserId;
@@ -185,7 +192,6 @@ class _CommentItemState extends State<_CommentItem> {
         margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         padding: const EdgeInsets.all(12.0),
         decoration: BoxDecoration(
-          color: Colors.white, // 눌렀을 때 색상 변경
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -195,11 +201,10 @@ class _CommentItemState extends State<_CommentItem> {
             Row(
               children: [
                 Text(
-                  widget.comment['userName'] ?? 'User', // If userName is null, fallback to 'User'
+                  widget.comment['userName'] ??
+                      'User', // If userName is null, fallback to 'User'
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16
-                  ),
+                      fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(width: 10),
                 Text(
@@ -213,10 +218,13 @@ class _CommentItemState extends State<_CommentItem> {
                 ),
               ],
             ),
-            const SizedBox(height: 8.0), // Add space between name+time and the comment content
+            const SizedBox(
+                height:
+                    8.0), // Add space between name+time and the comment content
             // Comment content text
             Text(
-              widget.comment['comment'] ?? '댓글 내용 없음', // If comment is null, fallback to '댓글 내용 없음'
+              widget.comment['comment'] ??
+                  '댓글 내용 없음', // If comment is null, fallback to '댓글 내용 없음'
               style: const TextStyle(fontSize: 14),
               softWrap: true, // 자동 줄바꿈 활성화
             ),

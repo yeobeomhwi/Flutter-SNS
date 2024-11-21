@@ -10,11 +10,8 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'core/router.dart';
 import 'firebase_options.dart';
 
-
-
-
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
 Future<void> requestNotificationPermission() async {
   await Permission.notification.request();
@@ -34,10 +31,10 @@ void main() async {
 
 Future<void> initializeLocalNotifications() async {
   const AndroidInitializationSettings androidInitializationSettings =
-  AndroidInitializationSettings('@mipmap/ic_launcher');
+      AndroidInitializationSettings('@mipmap/ic_launcher');
 
   const DarwinInitializationSettings darwinInitializationSettings =
-  DarwinInitializationSettings(
+      DarwinInitializationSettings(
     requestAlertPermission: true,
     requestBadgePermission: true,
     requestSoundPermission: true,
@@ -60,9 +57,9 @@ Future<void> initializeLocalNotifications() async {
   );
 
   final AndroidFlutterLocalNotificationsPlugin?
-  androidFlutterLocalNotificationsPlugin =
-  flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>();
+      androidFlutterLocalNotificationsPlugin =
+      flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
 
   if (androidFlutterLocalNotificationsPlugin != null) {
     await androidFlutterLocalNotificationsPlugin
@@ -115,6 +112,9 @@ class MyApp extends StatelessWidget {
             appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.white, foregroundColor: Colors.black),
             primaryColor: Colors.white,
+            textTheme: Typography.material2021().black.apply(
+                  fontFamily: 'Pretendard',
+                ),
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(
               backgroundColor: Colors.white,
               selectedItemColor: Colors.black,
@@ -122,7 +122,11 @@ class MyApp extends StatelessWidget {
         darkTheme: ThemeData.dark().copyWith(
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(
                 selectedItemColor: Colors.white,
-                unselectedItemColor: Colors.grey)), // 기본 다크모드 테마
+                unselectedItemColor: Colors.grey),
+            textTheme: Typography.material2021().white.apply(
+                  fontFamily: 'Pretendard',
+                )),
+        // 기본 다크모드 테마
         themeMode: ThemeMode.system, // 시스템 설정에 따라 자동 전환
       ),
     );

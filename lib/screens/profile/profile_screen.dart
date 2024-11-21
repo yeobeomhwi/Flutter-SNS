@@ -114,91 +114,117 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: Center(
-        child: profileState.isLoading
-            ? const Center(child: CircularProgressIndicator()) // 로딩 중 스피너 표시
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // 프로필 이미지 표시
-                  CircleAvatar(
-                    backgroundColor: Colors.grey,
-                    backgroundImage: FileImage(
-                      File(user.photoURL),
-                    ),
-                    radius: 100.w,
+      appBar: AppBar(
+        title: const Text('프로필', style: TextStyle(fontWeight: FontWeight.w600)),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: profileState.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 30.h),
+
+                      // 프로필 이미지 섹션
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: Colors.grey[200],
+                            backgroundImage: FileImage(File(user.photoURL)),
+                            radius: 80.w,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Color(0xffF5F5F5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: IconButton(
+                                icon:
+                                    const Icon(Icons.edit, color: Colors.grey),
+                                onPressed: () async {
+                                  final picker = ImagePicker();
+                                  final pickedFile = await picker.pickImage(
+                                      source: ImageSource.gallery);
+                                  if (pickedFile != null) {
+                                    final imageFile = File(pickedFile.path);
+                                    ref
+                                        .read(profileProvider.notifier)
+                                        .updateProfilePicture(
+                                            user.uid, imageFile);
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      SizedBox(height: 10.h),
+
+                      // 사용자 정보 섹션
+                      Container(
+                        padding: EdgeInsets.all(20.w),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title: Text(
+                                user.displayName ?? '이름 없음',
+                                style: TextStyle(
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.w500),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            const Divider(),
+                            ListTile(
+                              title: Text(
+                                user.email ?? '이메일 없음',
+                                style: TextStyle(
+                                    fontSize: 16.sp, color: Colors.grey[700]),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: 32.h),
+
+                      // 로그아웃 버튼
+                      InfinityButton(
+                        onPressed: () async {
+                          try {
+                            await FirebaseService().signOut();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('로그아웃 되었습니다.'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                            GoRouter.of(context).push('/Login');
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('로그아웃 실패: $e'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        },
+                        title: '로그아웃',
+                      ),
+                      SizedBox(height: 20.h),
+                    ],
                   ),
-                  SizedBox(height: 16.h),
-
-                  // 사용자 이름 표시
-                  Text(
-                    '이름: ${user.displayName ?? '이름 없음'}',
-                    style: TextStyle(fontSize: 18.sp),
-                  ),
-
-                  SizedBox(height: 16.h),
-
-                  // 사용자 이메일 표시
-                  Text(
-                    '이메일: ${user.email ?? '이메일 없음'}',
-                    style: TextStyle(fontSize: 18.sp),
-                  ),
-
-                  SizedBox(height: 16.h),
-
-                  // 사용자 UID 표시
-                  Text(
-                    'UID: ${user.uid}',
-                    style: TextStyle(fontSize: 18.sp),
-                  ),
-
-                  SizedBox(height: 16.h),
-
-                  // 구분선
-                  Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: const Divider(),
-                  ),
-
-                  // 프로필 사진 변경 버튼
-                  InfinityButton(
-                    onPressed: () async {
-                      final picker = ImagePicker();
-                      final pickedFile =
-                          await picker.pickImage(source: ImageSource.gallery);
-
-                      if (pickedFile != null) {
-                        final imageFile = File(pickedFile.path);
-                        ref
-                            .read(profileProvider.notifier)
-                            .updateProfilePicture(user.uid, imageFile);
-                      }
-                    },
-                    title: '프로필 사진 변경',
-                  ),
-
-                  SizedBox(height: 5.h),
-
-                  // 로그아웃 버튼
-                  InfinityButton(
-                    onPressed: () async {
-                      try {
-                        await FirebaseService().signOut(); // 로그아웃 처리
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('로그아웃 되었습니다.')),
-                        );
-                        GoRouter.of(context).push('/Login');
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('로그아웃 실패: $e')),
-                        );
-                      }
-                    },
-                    title: '로그아웃',
-                  ),
-                ],
-              ),
+          ),
+        ),
       ),
     );
   }

@@ -87,7 +87,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                   child: SocialLoginButton(
                     backgroundColor: Colors.black,
                     height: 50,
-                    text: 'Login',
+                    text: '로그인',
                     textColor: Colors.white,
                     fontSize: 16,
                     buttonType: SocialLoginButtonType.generalLogin,
@@ -120,6 +120,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                   child: SocialLoginButton(
                     backgroundColor: Colors.black,
                     textColor: Colors.white,
+                    text: '구글로 로그인하기',
                     buttonType: SocialLoginButtonType.google,
                     onPressed: () async {
                       try {
@@ -144,10 +145,10 @@ class _LoginScreen2State extends State<LoginScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15.w),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Don't have an account?",
+                        "계정이 없으신가요?",
                         style: TextStyle(fontSize: 13.sp, color: Colors.grey),
                       ),
                       SizedBox(width: 5.w),
@@ -157,7 +158,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                           GoRouter.of(context).push('/Signup');
                         },
                         child: Text(
-                          "SignUp",
+                          "회원가입",
                           style: TextStyle(
                             fontSize: 15.sp,
                             color: Colors.blue,

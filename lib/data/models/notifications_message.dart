@@ -9,6 +9,7 @@ class Notification {
   final String time;
   final String title;
   final String type;
+  final String messageId;
 
   Notification(
       {required this.body,
@@ -18,6 +19,7 @@ class Notification {
       required this.title,
       required this.type,
       required this.user,
+      required this.messageId,
       this.comment = ""});
 
   Notification copyWith({
@@ -29,6 +31,7 @@ class Notification {
     String? type,
     String? user,
     String? comment,
+    String? messageId,
   }) {
     return Notification(
         body: body ?? this.body,
@@ -38,6 +41,7 @@ class Notification {
         title: title ?? this.title,
         type: type ?? this.type,
         user: user ?? this.user,
+        messageId: messageId ?? this.messageId,
         comment: comment ?? this.comment);
   }
 
@@ -52,6 +56,7 @@ class Notification {
     result.addAll({'type': type});
     result.addAll({'user': user});
     result.addAll({'comment': comment});
+    result.addAll({'messageId': messageId});
 
     return result;
   }
@@ -65,7 +70,8 @@ class Notification {
       title: map['title'] ?? '',
       type: map['type'] ?? '',
       user: map['user'] ?? '',
-      comment:  map['comment'] ?? '',
+      messageId: map['messageId'] ?? '',
+      comment: map['comment'] ?? '',
     );
   }
 
@@ -76,7 +82,7 @@ class Notification {
 
   @override
   String toString() {
-    return 'NotificationMessage(body: $body, date: $date, postId: $postId, time: $time, title: $title, type: $type, user: $user, comment: $comment)';
+    return 'NotificationMessage(body: $body, date: $date, postId: $postId, time: $time, title: $title, type: $type, user: $user, comment: $comment, messageId: $messageId)';
   }
 
   @override
@@ -89,6 +95,7 @@ class Notification {
         other.postId == postId &&
         other.time == time &&
         other.title == title &&
+        other.messageId == messageId &&
         other.type == type;
   }
 
@@ -99,6 +106,7 @@ class Notification {
         postId.hashCode ^
         time.hashCode ^
         title.hashCode ^
+        messageId.hashCode ^
         type.hashCode;
   }
 }
