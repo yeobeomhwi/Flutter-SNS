@@ -220,7 +220,6 @@ class PostNotifier extends StateNotifier<PostState> {
     }
   }
 
-
   // 임시 저장 경로에 이미지 저장
   Future<String> saveImageLocally(
       File imageFile, String postId, int index) async {
@@ -342,7 +341,6 @@ class PostNotifier extends StateNotifier<PostState> {
     }
   }
 
-
   // 게시물 캡션 업데이트
   Future<void> updateCaption({
     required String postId,
@@ -352,12 +350,13 @@ class PostNotifier extends StateNotifier<PostState> {
       await _firestore.collection('posts').doc(postId).update({
         'caption': newCaption,
       });
+      state =
+          state.copyWith(isUpdateCaption: true); // isUpdateCaption 값을 true로 변경
     } catch (e) {
       state = state.copyWith(error: e.toString()); // 오류 처리
       throw Exception('게시물 수정 중 오류가 발생했습니다');
     }
   }
-
 
   Future<File> resizeImage(File imageFile, int targetHeight) async {
     // 원본 이미지 로드
@@ -384,7 +383,6 @@ class PostNotifier extends StateNotifier<PostState> {
 
     return resizedImageFile;
   }
-
 
   // 리소스 해제
   @override

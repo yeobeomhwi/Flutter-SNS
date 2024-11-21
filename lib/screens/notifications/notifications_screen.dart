@@ -68,44 +68,74 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         itemBuilder: (context, index) {
           final notification = notificationsState.notifications?[index];
 
-          // 디버깅을 위한 로그 추가
-          print('=== Notification Debug ===');
-          print('Notification object: $notification');
-          print('PostId: ${notification?.postId}');
-          print('Type: ${notification?.type}');
-          print('========================');
-
           if (notification == null) {
             return const SizedBox.shrink();
           }
 
-          return GestureDetector(
-            onTap: () {
-              if (notification.postId.isNotEmpty) {
-                print(
-                    'Tapped notification with postId: ${notification.postId}');
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        PostDetailsScreen(postId: notification.postId),
+          return Dismissible(
+            key: Key(notification.messageId),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20.0),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    '알림이 삭제됩니다.',
+                    style: TextStyle(color: Colors.white),
                   ),
+                  Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+            ),
+            onDismissed: (direction) async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              try {
+                await ref
+                    .read(notificationsProvider.notifier)
+                    .deleteNotification(notification.messageId);
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(content: Text('알림이 삭제되었습니다')),
                 );
-                _logPostId(notification.postId);
-              } else {
-                print('PostId is empty!');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('유효하지 않은 게시물입니다.')),
+              } catch (e) {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(content: Text('알림 삭제 중 오류가 발생했습니다')),
                 );
               }
             },
-            child: NotificationCard(
-              type: notification.type,
-              body: notification.body,
-              date: notification.date,
-              time: notification.time,
-              user: notification.user,
-              comment: notification.comment,
+            child: GestureDetector(
+              onTap: () {
+                if (notification.postId.isNotEmpty) {
+                  print(
+                      'Tapped notification with postId: ${notification.postId}');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          PostDetailsScreen(postId: notification.postId),
+                    ),
+                  );
+                  _logPostId(notification.postId);
+                } else {
+                  print('PostId is empty!');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('유효하지 않은 게시물입니다.')),
+                  );
+                }
+              },
+              child: NotificationCard(
+                type: notification.type,
+                body: notification.body,
+                date: notification.date,
+                time: notification.time,
+                user: notification.user,
+                comment: notification.comment,
+              ),
             ),
           );
         },
