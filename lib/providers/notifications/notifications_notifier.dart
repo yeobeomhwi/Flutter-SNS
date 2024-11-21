@@ -10,12 +10,11 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
 
   NotificationsNotifier(this._firestore)
       : super(NotificationsState(notifications: [], isLoading: true)) {
-    _subscribeToNotificationCollection(); // 실시간 데이터 리스너 시작
+    _subscribeToNotificationCollection();
   }
 
   StreamSubscription<DocumentSnapshot>? _subscription;
 
-  // Firebase에서 실시간으로 알림 데이터 가져오기
   void _subscribeToNotificationCollection() async {
     state = state.copyWith(isLoading: true);
 
@@ -34,26 +33,27 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
         .snapshots()
         .listen(
       (snapshot) {
-        // 전체 데이터 구조 확인
         final data = snapshot.data();
-
         final List<dynamic> messages = data?['messages'] ?? [];
         print('messages: $messages');
 
         final newNotifications = messages.map((message) {
-          // null 체크 및 기본값 설정
           final postId = message['postid']?.toString() ?? '';
-          if (postId.isEmpty) {}
 
           return Notification(
-              body: message['body']?.toString() ?? '',
-              date: message['date']?.toString() ?? '',
-              postId: postId,
-              time: message['time']?.toString() ?? '',
-              title: message['title']?.toString() ?? '',
-              type: message['type']?.toString() ?? '',
-              user: message['user']?.toString() ?? '',
-              comment: message['comment']?.toString() ?? '');
+            body: message['body']?.toString() ?? '',
+            date: message['date']?.toString() ?? '',
+            postId: postId,
+            time: message['time']?.toString() ?? '',
+            title: message['title']?.toString() ?? '',
+            type: message['type']?.toString() ?? '',
+            user: message['user']?.toString() ?? '',
+            comment: message['comment']?.toString() ?? '',
+            messageId: message['messageId']?.toString() ??
+                DateTime.now()
+                    .millisecondsSinceEpoch
+                    .toString(), // 고유한 messageId 생성
+          );
         }).toList();
 
         state = state.copyWith(
@@ -70,10 +70,9 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     );
   }
 
-  // 상태 변경 리스너 취소
   @override
   void dispose() {
-    _subscription?.cancel(); // 리스너 종료
+    _subscription?.cancel();
     super.dispose();
   }
 
@@ -88,6 +87,8 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
           return Notification.fromMap({
             ...data,
             'id': doc.id,
+            'messageId':
+                data['messageId'] ?? doc.id, // messageId가 없는 경우 document ID 사용
           });
         }).toList();
 
