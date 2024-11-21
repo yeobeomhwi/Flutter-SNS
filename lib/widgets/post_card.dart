@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/post/post_provider.dart';
 import '../services/firebase_service.dart';
+import '../core/color_constant.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final Post post;
@@ -265,10 +266,12 @@ class _PostCardState extends ConsumerState<PostCard> {
               child: SmoothPageIndicator(
                 controller: _controller,
                 count: widget.post.imageUrls.length,
-                effect: const WormEffect(
+                effect: WormEffect(
                   dotWidth: 8.0,
                   dotHeight: 8.0,
                   spacing: 16.0,
+                  activeDotColor: greenColor,
+                  dotColor: Colors.grey.shade300,
                 ),
               ),
             ),

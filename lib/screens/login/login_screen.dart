@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:social_login_buttons/social_login_buttons.dart';
 import '../../services/firebase_service.dart';
-import '../../widgets/login/signup.dart';
 import '../../widgets/login/custom_textfiled.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -41,9 +40,15 @@ class _LoginScreen2State extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 96.w), // 위쪽 공간
-                const Center(child: Text('Logo')), // 로고 위치
-                SizedBox(height: 120.h), // 로고와 입력 필드 사이의 공간
+                // SizedBox(height: 96.w), // 위쪽 공간
+                Center(
+                  child: SizedBox(
+                    width: 300.w,
+                    height: 300.w,
+                    child: Image.asset('assets/images/logo.png'),
+                  ),
+                ), // 로고 위치
+                SizedBox(height: 30.h), // 로고와 입력 필드 사이의 공간
 
                 // 이메일 입력 필드
                 CustomTextFiled(
@@ -79,12 +84,13 @@ class _LoginScreen2State extends State<LoginScreen> {
                     return null;
                   },
                 ),
-                SizedBox(height: 10.h),
+                SizedBox(height: 20.h),
 
                 // 로그인 버튼
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10.w),
                   child: SocialLoginButton(
+                    borderRadius: 30,
                     backgroundColor: Colors.black,
                     height: 50,
                     text: '로그인',
@@ -118,6 +124,7 @@ class _LoginScreen2State extends State<LoginScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10.w),
                   child: SocialLoginButton(
+                    borderRadius: 30,
                     backgroundColor: Colors.black,
                     textColor: Colors.white,
                     text: '구글로 로그인하기',

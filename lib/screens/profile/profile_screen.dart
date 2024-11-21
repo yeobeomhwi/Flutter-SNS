@@ -141,13 +141,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             bottom: 0,
                             right: 0,
                             child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).primaryColor,
+                              decoration: const BoxDecoration(
+                                color: Colors.grey,
                                 shape: BoxShape.circle,
                               ),
                               child: IconButton(
                                 icon:
-                                    const Icon(Icons.edit, color: Colors.grey),
+                                    const Icon(Icons.edit, color: Colors.white),
                                 onPressed: () async {
                                   final picker = ImagePicker();
                                   final pickedFile = await picker.pickImage(
@@ -199,6 +199,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
                       // 로그아웃 버튼
                       InfinityButton(
+                        backgroundColor: Colors.grey,
                         onPressed: () async {
                           try {
                             await FirebaseService().signOut();

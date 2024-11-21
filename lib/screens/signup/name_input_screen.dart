@@ -14,7 +14,8 @@ class NameInputScreen extends ConsumerStatefulWidget {
   const NameInputScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _NameInputScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _NameInputScreenState();
 }
 
 class _NameInputScreenState extends ConsumerState<NameInputScreen> {
@@ -51,10 +52,9 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
       body: Form(
         key: _formKey,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),  // padding 적용
+          padding: EdgeInsets.symmetric(horizontal: 20.w), // padding 적용
           child: Column(
             children: [
-
               SizedBox(height: 10.h),
 
               Text(
@@ -100,6 +100,7 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: SocialLoginButton(
+                  borderRadius: 30,
                   backgroundColor: Colors.black,
                   height: 50.h,
                   text: '회원가입',
@@ -143,7 +144,8 @@ class _NameInputScreenState extends ConsumerState<NameInputScreen> {
                           print('먼데이거 $result');
                           // 실패 메시지를 스낵바로 표시
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(result)),  // 여기서 result가 e.message
+                            SnackBar(
+                                content: Text(result)), // 여기서 result가 e.message
                           );
                         }
                       } catch (error) {
