@@ -81,14 +81,21 @@ class _CommentDialogState extends ConsumerState<CommentDialog> {
   }
 
   Widget _buildHeader() {
+    final postState = ref.watch(postProvider);
+    final post = postState.posts.firstWhere(
+      (post) => post.postId == widget.postId,
+      orElse: () => throw Exception('Post not found'),
+    );
+    final comments = post.comments;
+
     return Container(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: const EdgeInsets.only(bottom: 16, left: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Text(
-            'Comments',
-            style: TextStyle(
+            '댓글 ${comments.length}',
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),

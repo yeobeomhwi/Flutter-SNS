@@ -33,17 +33,7 @@ class PostDetailsScreen extends ConsumerWidget {
 
       return Scaffold(
         appBar: AppBar(),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: PostCard(post: post),
-            ),
-            Expanded(
-              child: Comments(postId: postId),
-            ),
-          ],
-        ),
+        body: Comments(postId: postId),
       );
     } catch (e) {
       // 에러 발생 시 에러 화면 표시
@@ -128,12 +118,41 @@ class _CommentsState extends ConsumerState<Comments> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: _buildHeader(),
-          ),
           Expanded(
-            child: _buildCommentsList(comments),
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                children: [
+                  PostCard(post: post),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _buildHeader(),
+                  ),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: comments.length,
+                    itemBuilder: (context, index) {
+                      final comment = comments[index];
+                      return Column(
+                        children: [
+                          _CommentItem(
+                            comment: comment,
+                            currentUserId: currentUser?.uid,
+                            onDelete: () =>
+                                ref.read(postProvider.notifier).deleteComment(
+                                      postId: widget.postId,
+                                      commentId: comment['commentId'],
+                                    ),
+                          ),
+                          const Divider()
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
           ),
           _buildCommentInput(post.postId),
         ],
@@ -152,29 +171,6 @@ class _CommentsState extends ConsumerState<Comments> {
         ),
         textAlign: TextAlign.start,
       ),
-    );
-  }
-
-  Widget _buildCommentsList(List<dynamic> comments) {
-    return ListView.builder(
-      controller: _scrollController,
-      itemCount: comments.length,
-      itemBuilder: (context, index) {
-        final comment = comments[index];
-        return Column(
-          children: [
-            _CommentItem(
-              comment: comment,
-              currentUserId: currentUser?.uid,
-              onDelete: () => ref.read(postProvider.notifier).deleteComment(
-                    postId: widget.postId,
-                    commentId: comment['commentId'],
-                  ),
-            ),
-            const Divider()
-          ],
-        );
-      },
     );
   }
 
