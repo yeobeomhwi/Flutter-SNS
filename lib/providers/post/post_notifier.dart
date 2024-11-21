@@ -149,7 +149,6 @@ class PostNotifier extends StateNotifier<PostState> {
     required List<String> imageUrls,
     required String postId,
   }) async {
-    print('================================1');
     try {
       // Firestore에 저장할 데이터
       final newPost = {
@@ -157,15 +156,16 @@ class PostNotifier extends StateNotifier<PostState> {
         'userId': userId, // 작성자 ID
         'userName': userName, // 작성자 이름
         'profileImage': profileImage, // 작성자 프로필 이미지
-        'imageUrls': [],
+        'imageUrls': imageUrls,
         'caption': caption, // 게시물 내용
         'isSynced': false, // 동기화 여부는 오프라인이므로 false
         'createdAt': createdAt ?? FieldValue.serverTimestamp(),
         'likes': likes, // 좋아요 리스트
         'comments': <Map<String, dynamic>>[], // 빈 댓글 리스트로 초기화
       };
-      print('=====================================================2');
+
       final currentPosts = state.posts;
+
       final updatedPost = Post(
         postId: postId,
         userId: userId,
@@ -181,9 +181,6 @@ class PostNotifier extends StateNotifier<PostState> {
       final updatedPosts = List<Post>.from(currentPosts)..add(updatedPost);
       state = state.copyWith(posts: updatedPosts);
 
-      print('=====================================================3');
-      print('================${state.posts.toString()}');
-      print('=========추가완료===========');
       // Firestore에 오프라인 상태로 저장
       await _firestore.collection('posts').doc(postId).set(newPost);
 
@@ -222,6 +219,8 @@ class PostNotifier extends StateNotifier<PostState> {
       print("게시물 추가 중 오류 발생: $e");
     }
   }
+
+
   // 임시 저장 경로에 이미지 저장
   Future<String> saveImageLocally(
       File imageFile, String postId, int index) async {
