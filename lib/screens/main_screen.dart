@@ -12,9 +12,9 @@ class MainScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final List<Widget> screens = [
-      HomeScreen(),
+      const HomeScreen(),
       CreatePostScreen(),
-      ProfileScreen(),
+      const ProfileScreen(),
     ];
 
     // 상태를 읽어옵니다.
@@ -22,18 +22,19 @@ class MainScreen extends ConsumerWidget {
 
     return Scaffold(
       body: IndexedStack(
-        index: currentIndex,  // currentIndex는 int 값이어야 합니다.
-        children: screens,    // 여기서 _screens가 아닌 screens를 사용합니다.
+        index: currentIndex, // currentIndex는 int 값이어야 합니다.
+        children: screens, // 여기서 _screens가 아닌 screens를 사용합니다.
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,  // currentIndex는 int 값이어야 합니다.
+        currentIndex: currentIndex, // currentIndex는 int 값이어야 합니다.
         onTap: (int index) {
           ref.read(bottomNavIndexProvider.notifier).setIndex(index);
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.add_box), label: 'Add Feed'),
-          BottomNavigationBarItem(icon: Icon(Icons.account_circle), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
+          BottomNavigationBarItem(icon: Icon(Icons.add_box), label: '포스트'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.account_circle), label: '프로필'),
         ],
       ),
     );
@@ -46,9 +47,8 @@ class MainScreenWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      child:  MainScreen(),
+    return const ProviderScope(
+      child: MainScreen(),
     );
   }
 }
-

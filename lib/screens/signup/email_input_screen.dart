@@ -90,6 +90,7 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: SocialLoginButton(
+                  borderRadius: 30,
                   backgroundColor: Colors.black,
                   height: 50.h,
                   text: '다음',
@@ -99,11 +100,11 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       formData.update((state) => UserModel(
-                        uid: formData.state!.uid,
-                        displayName: formData.state!.displayName,
-                        email: emailController.text.trim(),
-                        photoURL: formData.state!.photoURL,
-                      ));
+                            uid: formData.state!.uid,
+                            displayName: formData.state!.displayName,
+                            email: emailController.text.trim(),
+                            photoURL: formData.state!.photoURL,
+                          ));
                       pageController.nextPage(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:app_team2/widgets/selected_image_preview.dart';
+import 'package:app_team2/widgets/custom_button.dart';
 
 class CreatePostScreen extends ConsumerWidget {
   CreatePostScreen({super.key});
@@ -89,34 +90,13 @@ class CreatePostScreen extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _customButton(
+          customButton(
               '카메라', () => getImage(ImageSource.camera, ref), ref, context),
           const SizedBox(width: 20),
-          _customButton(
-              '갤러리', () => getImage(ImageSource.gallery, ref), ref, context),
-          const SizedBox(width: 20),
-          _customButton('복수 선택', () => getMultiImage(ref), ref, context),
+          customButton('갤러리', () => getMultiImage(ref), ref, context),
         ],
-      ),
-    );
-  }
-
-  Widget _customButton(String title, VoidCallback onPressed, WidgetRef ref,
-      BuildContext context) {
-    return SizedBox(
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black,
-          foregroundColor: Theme.of(context).brightness == Brightness.dark
-              ? Colors.black
-              : Colors.white,
-        ),
-        child: Text(title),
       ),
     );
   }
@@ -132,7 +112,15 @@ class CreatePostScreen extends ConsumerWidget {
               children:
                   pickedImages.map((e) => _gridPhotoItem(e, ref)).toList(),
             )
-          : const SizedBox(),
+          : const Center(
+              child: Text(
+                '선택된 사진이 없습니다.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
     );
   }
 

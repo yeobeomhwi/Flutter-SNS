@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/post/post_provider.dart';
 import '../screens/home/post_details_screen.dart';
 import '../services/firebase_service.dart';
+import '../core/color_constant.dart';
 
 class PostCard extends ConsumerStatefulWidget {
   final Post post;
@@ -97,41 +98,55 @@ class _PostCardState extends ConsumerState<PostCard> {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.post.userId == currentUserUid) ...[
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text(
-                  '게시물 삭제',
-                  style: TextStyle(color: Colors.red),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 18, 12, 0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.post.userId == currentUserUid) ...[
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text(
+                    '게시물 삭제',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _deletePost();
+                  },
                 ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deletePost();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('게시물 수정'),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.push('/UpdateCaption', extra: widget.post.postId);
-                },
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: const Text('게시물 수정'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/UpdateCaption', extra: widget.post.postId);
+                  },
+                ),
+              ],
+              if (widget.post.userId != currentUserUid)
+                const Padding(
+                  padding: EdgeInsets.only(top: 12.0),
+                  child: Text(
+                    '내 게시물만 수정할 수 있습니다.',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('취소'),
+                  ),
+                ),
               ),
             ],
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('취소'),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -139,8 +154,6 @@ class _PostCardState extends ConsumerState<PostCard> {
 
   @override
   Widget build(BuildContext context) {
-    final postState = ref.watch(postProvider);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -254,10 +267,12 @@ class _PostCardState extends ConsumerState<PostCard> {
               child: SmoothPageIndicator(
                 controller: _controller,
                 count: widget.post.imageUrls.length,
-                effect: const WormEffect(
+                effect: WormEffect(
                   dotWidth: 8.0,
                   dotHeight: 8.0,
                   spacing: 16.0,
+                  activeDotColor: greenColor,
+                  dotColor: Colors.grey.shade300,
                 ),
               ),
             ),
@@ -370,9 +385,7 @@ class _PostCardState extends ConsumerState<PostCard> {
 
               const SizedBox(height: 4.0),
               Text(
-                postState.isUpdateCaption
-                    ? '${_getTimeAgo(widget.post.createdAt)} (수정됨)'
-                    : _getTimeAgo(widget.post.createdAt),
+                _getTimeAgo(widget.post.createdAt),
                 style: const TextStyle(fontSize: 12.0, color: Colors.grey),
               ),
             ],

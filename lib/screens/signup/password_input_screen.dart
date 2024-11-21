@@ -49,13 +49,12 @@ class _PasswordInputScreenState extends ConsumerState<PasswordInputScreen> {
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(
             children: [
-
               SizedBox(height: 10.h),
 
               Text(
                 '사용자 비밀번호 입력',
                 style: TextStyle(
-                  fontSize: 26.sp,  // flutter_screenutil 적용
+                  fontSize: 26.sp, // flutter_screenutil 적용
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
                 ),
@@ -93,11 +92,12 @@ class _PasswordInputScreenState extends ConsumerState<PasswordInputScreen> {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.w),
                 child: SocialLoginButton(
+                  borderRadius: 30,
                   backgroundColor: Colors.black,
-                  height: 50.h,  // flutter_screenutil 적용
+                  height: 50.h, // flutter_screenutil 적용
                   text: '다음',
                   textColor: Colors.white,
-                  fontSize: 16.sp,  // flutter_screenutil 적용
+                  fontSize: 16.sp, // flutter_screenutil 적용
                   buttonType: SocialLoginButtonType.generalLogin,
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {

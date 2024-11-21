@@ -63,8 +63,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      body: ListView.builder(
-        itemCount: notificationsState.notifications?.length,
+      body: ListView.separated(
+        separatorBuilder: (context, index) => const SizedBox(height: 10),
+        itemCount: notificationsState.notifications?.length ?? 0,
         itemBuilder: (context, index) {
           final notification = notificationsState.notifications?[index];
 

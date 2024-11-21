@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:app_team2/core/color_constant.dart';
 import 'package:app_team2/providers/post/picked_images_provider.dart';
+import 'package:app_team2/widgets/custom_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +22,73 @@ class CreateCaptionScreen extends ConsumerStatefulWidget {
 class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
   final TextEditingController _captionController = TextEditingController();
   final FirebaseService firebaseService = FirebaseService();
-  bool _isLoading = false; // 로딩 상태 변수 추가
+  bool _isLoading = false;
+
+  Future<void> _handleSubmit() async {
+    // 로딩 중일 때 버튼 비활성화
+    setState(() {
+      _isLoading = true; // 로딩 시작
+    });
+
+    final userId = firebaseService.getCurrentUserUid();
+    try {
+      final postId = '${userId}_${DateTime.now().millisecondsSinceEpoch}';
+
+      // 프로필 이미지 가져오기
+      final profileImage = firebaseService.getCurrentUser()!.photoURL ?? '';
+
+      final pickedImages = ref.read(pickedImagesProvider);
+      final List<File> imagePaths =
+          pickedImages.map((xFile) => File(xFile.path)).toList();
+
+      // 로컬에 게시물 추가
+      ref.read(postProvider.notifier).addPost(
+        postId: postId,
+        userId: userId!,
+        userName: firebaseService.getCurrentUser()!.displayName.toString(),
+        caption: _captionController.text,
+        imageUrls: imagePaths.map((e) => e.path).toList(),
+        isSynced: false,
+        profileImage: profileImage,
+        createdAt: FieldValue.serverTimestamp(),
+        likes: [],
+        comments: [],
+      );
+
+      // 성공 메시지 표시
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('포스트가 성공적으로 작성되었습니다.'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+
+      // 이미지 초기화 및 텍스트 필드 비우기
+      ref.read(pickedImagesProvider.notifier).clearImages();
+      _captionController.clear();
+
+      // 메인 화면으로 이동
+      if (mounted) {
+        context.go('/Main');
+        ref.read(bottomNavIndexProvider.notifier).resetIndex(); // 인덱스 초기화
+      }
+    } catch (e) {
+      // 더 구체적인 에러 메시지 처리 가능
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('오류가 발생했습니다: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false; // 로딩 종료
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -69,84 +137,19 @@ class _CreateCaptionScreenState extends ConsumerState<CreateCaptionScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: yellowColor),
+                    ),
                     contentPadding: const EdgeInsets.all(12),
                   ),
                   maxLines: 5,
                   textInputAction: TextInputAction.newline,
                 ),
                 const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () async {
-                          // 로딩 중일 때 버튼 비활성화
-                          setState(() {
-                            _isLoading = true; // 로딩 시작
-                          });
-
-                          final userId = firebaseService.getCurrentUserUid();
-                          try {
-                            final postId = '${userId}_'
-                                '${DateTime.now().millisecondsSinceEpoch}';
-
-                            // 프로필 이미지 가져오기
-                            final profileImage =
-                                firebaseService.getCurrentUser()!.photoURL ??
-                                    '';
-
-                            // 로컬에 게시물 추가
-                            ref.read(postNotifierProvider.notifier).addPost(
-                              postId: postId,
-                              userId: userId!,
-                              userName: firebaseService
-                                  .getCurrentUser()!
-                                  .displayName
-                                  .toString(),
-                              caption: _captionController.text,
-                              imageUrls: imagePaths.map((e) => e.path).toList(),
-                              isSynced: false,
-                              profileImage: profileImage,
-                              createdAt: FieldValue.serverTimestamp(),
-                              likes: [],
-                              comments: [],
-                            );
-
-                            // 성공 메시지 표시
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('포스트가 성공적으로 작성되었습니다.'),
-                                duration: Duration(seconds: 1),
-                              ),
-                            );
-
-                            // 이미지 초기화 및 텍스트 필드 비우기
-                            ref
-                                .read(pickedImagesProvider.notifier)
-                                .clearImages();
-                            _captionController.clear();
-
-                            // 메인 화면으로 이동
-                            context.go('/Main');
-                            ref.read(bottomNavIndexProvider.notifier).resetIndex(); // 인덱스 초기화
-                          } catch (e) {
-                            // 더 구체적인 에러 메시지 처리 가능
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text('오류가 발생했습니다: ${e.toString()}')),
-                            );
-                          } finally {
-                            setState(() {
-                              _isLoading = false; // 로딩 종료
-                            });
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('Post'),
-                ),
-                if (_isLoading) // 로딩 중이면 인디케이터 표시
+                customButton('Post', _isLoading ? null : () => _handleSubmit(),
+                    ref, context),
+                if (_isLoading)
                   const Center(
                     child: CircularProgressIndicator(),
                   ),
