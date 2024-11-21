@@ -9,3 +9,4 @@ extension NameValidator on String {
     return RegExp(r"^[a-zA-Z0-9가-힣]{3,}$").hasMatch(this);
   }
 }
+

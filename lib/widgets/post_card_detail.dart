@@ -330,9 +330,7 @@ class _PostCardDetilsState extends ConsumerState<PostCardDetils> {
               ),
               const SizedBox(height: 4.0),
               Text(
-                postState.isUpdateCaption
-                    ? '${_getTimeAgo(widget.post.createdAt)} (수정됨)'
-                    : _getTimeAgo(widget.post.createdAt),
+                _getTimeAgo(widget.post.createdAt),
                 style: const TextStyle(fontSize: 12.0, color: Colors.grey),
               ),
             ],

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:developer' as developer;
+import 'package:app_team2/utils/extensions/email_vaildator.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -59,7 +60,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // 연결 상태가 변경될 때마다 호출되는 함수
   Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
-    var uid = FirebaseService().getCurrentUser()?.uid;
+    var uid = FirebaseService()
+        .getCurrentUser()
+        ?.uid;
     setState(() {
       _connectionStatus = result;
       // 와이파이나 모바일 네트워크가 연결되었으면
@@ -125,108 +128,172 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: profileState.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 30.h),
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(height: 30.h),
 
-                      // 프로필 이미지 섹션
-                      Stack(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.grey[200],
-                            backgroundImage: FileImage(File(user.photoURL)),
-                            radius: 80.w,
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                color: Colors.grey,
-                                shape: BoxShape.circle,
-                              ),
-                              child: IconButton(
-                                icon:
-                                    const Icon(Icons.edit, color: Colors.white),
-                                onPressed: () async {
-                                  final picker = ImagePicker();
-                                  final pickedFile = await picker.pickImage(
-                                      source: ImageSource.gallery);
-                                  if (pickedFile != null) {
-                                    final imageFile = File(pickedFile.path);
-                                    ref
-                                        .read(profileProvider.notifier)
-                                        .updateProfilePicture(
-                                            user.uid, imageFile);
-                                  }
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: 10.h),
-
-                      // 사용자 정보 섹션
-                      Container(
-                        padding: EdgeInsets.all(20.w),
-                        child: Column(
-                          children: [
-                            ListTile(
-                              title: Text(
-                                user.displayName ?? '이름 없음',
-                                style: TextStyle(
-                                    fontSize: 18.sp,
-                                    fontWeight: FontWeight.w500),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            const Divider(),
-                            ListTile(
-                              title: Text(
-                                user.email ?? '이메일 없음',
-                                style: TextStyle(
-                                    fontSize: 16.sp, color: Colors.grey[700]),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
+                // 프로필 이미지 섹션
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage: FileImage(File(user.photoURL)),
+                      radius: 80.w,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.grey,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon:
+                          const Icon(Icons.edit, color: Colors.white),
+                          onPressed: () async {
+                            final picker = ImagePicker();
+                            final pickedFile = await picker.pickImage(
+                                source: ImageSource.gallery);
+                            if (pickedFile != null) {
+                              final imageFile = File(pickedFile.path);
+                              ref
+                                  .read(profileProvider.notifier)
+                                  .updateProfilePicture(
+                                  user.uid, imageFile);
+                            }
+                          },
                         ),
                       ),
+                    ),
+                  ],
+                ),
 
-                      SizedBox(height: 32.h),
+                SizedBox(height: 10.h),
 
-                      // 로그아웃 버튼
-                      InfinityButton(
-                        backgroundColor: Colors.grey,
-                        onPressed: () async {
-                          try {
-                            await FirebaseService().signOut();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('로그아웃 되었습니다.'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                            GoRouter.of(context).push('/Login');
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('로그아웃 실패: $e'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          }
-                        },
-                        title: '로그아웃',
+                // 사용자 정보 섹션
+                Container(
+                  padding: EdgeInsets.all(20.w),
+                  child: Column(
+                    children: [
+                      Text(
+                        user.displayName ?? '이름 없음',
+                        style: TextStyle(
+                            fontSize: 18.sp, fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.center,
                       ),
-                      SizedBox(height: 20.h),
+                      const Divider(),
+                      Text(
+                        user.email ?? '이메일 없음',
+                        style: TextStyle(
+                            fontSize: 16.sp, color: Colors.grey[700]),
+                        textAlign: TextAlign.center,
+                      ),
                     ],
                   ),
+                ),
+
+                SizedBox(height: 32.h),
+
+                // 이름 변경 버튼
+                InfinityButton(
+                  backgroundColor: Colors.grey,
+                  onPressed: () => _showDisplayNameDialog(context),
+                  title: '이름 변경',
+                ),
+
+                SizedBox(height: 5.h),
+
+                // 로그아웃 버튼
+                InfinityButton(
+                  backgroundColor: Colors.grey,
+                  onPressed: () async {
+                    try {
+                      await FirebaseService().signOut();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('로그아웃 되었습니다.'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                      GoRouter.of(context).push('/Login');
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('로그아웃 실패: $e'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  title: '로그아웃',
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  void _showDisplayNameDialog(BuildContext context) {
+    final TextEditingController displayNameController = TextEditingController();
+    final _formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('이름 변경'),
+        backgroundColor: Colors.white,
+        content: Form(
+          key: _formKey,
+          child: TextFormField(
+            controller: displayNameController,
+            decoration: const InputDecoration(
+              labelText: '새로운 이름을 입력하세요',
+            ),
+            validator: (value) {
+              if (value!.isEmpty) {
+                return '이름을 입력해 주세요.';
+              } else if (value.length < 3) {
+                return '이름은 최소 3글자 이상이어야 합니다.';
+              } else if (!_isValidName(value)) {
+                return '유효한 이름을 입력해 주세요. 한글, 영어만 입력 가능합니다.';
+              }
+              return null;
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                final name = displayNameController.text;
+                ref.read(profileProvider.notifier).updateDisplayName(name);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('이름이 변경되었습니다: $name'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _isValidName(String name) {
+    final regExp = RegExp(r'^[a-zA-Z가-힣\s]+$');
+    return regExp.hasMatch(name);
+  }
+
 }
+

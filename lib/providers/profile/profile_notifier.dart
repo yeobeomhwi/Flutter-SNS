@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:app_team2/providers/profile/profile_state.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -122,6 +123,33 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     } catch (e) {
       // 에러 발생 시 상태 업데이트
       state = ProfileState(isLoading: false, error: '프로필 사진 업데이트 실패: $e');
+      print('에러: $e');
+    }
+  }
+
+  // displayName 업데이트 함수 추가
+  Future<void> updateDisplayName(String name) async {
+    try {
+      // 로딩 상태로 변경
+      state = ProfileState(isLoading: true, user: state.user); // 로딩 시작
+      final FirebaseAuth _auth = FirebaseAuth.instance;
+      // Firebase에서 displayName 업데이트
+      User? user = _auth.currentUser;
+      // 사용자 정보 업데이트
+      await user?.updateDisplayName(name);
+
+      // 로컬 DB에 사용자 정보 업데이트
+      final updatedUser = state.user?.copyWith(displayName: name);
+      if (updatedUser != null) {
+        final dbHelper = DatabaseHelper();
+        await dbHelper.updateUser(updatedUser);
+
+        // 상태 갱신하여 UI 반영
+        state = ProfileState(user: updatedUser); // 로딩 끝, 프로필 업데이트
+      }
+    } catch (e) {
+      // 에러 발생 시 상태 업데이트
+      state = ProfileState(isLoading: false, error: 'displayName 업데이트 실패: $e');
       print('에러: $e');
     }
   }
