@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDw34-wqv9FOVSXbZVots8xciyxE9gNSgo',
-    appId: '1:304414671121:android:d522297c24f3db05f54cb0',
+    appId: '1:304414671121:android:6cb4462e2b1e924af54cb0',
     messagingSenderId: '304414671121',
     projectId: 'app-team2-2',
     storageBucket: 'app-team2-2.firebasestorage.app',
@@ -59,10 +59,13 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCphBoft9JynvpBekwNOfef857oUOHEKOE',
-    appId: '1:304414671121:ios:cbcd48e6f1d42929f54cb0',
+    appId: '1:304414671121:ios:8507965348c50852f54cb0',
     messagingSenderId: '304414671121',
     projectId: 'app-team2-2',
     storageBucket: 'app-team2-2.firebasestorage.app',
-    iosBundleId: 'com.example.appTeam2',
+    androidClientId: '304414671121-37e8ghndqcot5aqs4o8krfrvbsk6enok.apps.googleusercontent.com',
+    iosClientId: '304414671121-s1mofldragu61jte6mc6igau83oqoabn.apps.googleusercontent.com',
+    iosBundleId: 'com.anypost.app',
   );
+
 }

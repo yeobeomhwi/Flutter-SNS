@@ -61,6 +61,7 @@ dependencies:
   flutter_svg: ^2.0.15
   image: ^4.3.0
   flutter_native_splash: ^2.4.3
+  change_app_package_name: ^1.4.0
 
 dev_dependencies:
   flutter_test:
